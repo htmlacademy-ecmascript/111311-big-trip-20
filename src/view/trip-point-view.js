@@ -1,33 +1,32 @@
 import {createElement} from '../render.js';
+import {duration, toDay, toTime} from '../utils';
 
-function createTripPointTemplate() {
+function createTripPointTemplate(tripPoint) {
+  const day = toDay(tripPoint.dateFrom);
+  const startTime = toTime(tripPoint.dateFrom);
+  const endTime = toTime(tripPoint.dateTo);
+  const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
+  const eventTitle = `${tripPoint.type[0].toUpperCase() + tripPoint.type.slice(1)} ${tripPoint.destination.name}`;
+
   return (
     `<li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime="2019-03-18">MAR 18</time>
+        <time class="event__date" datetime="${tripPoint.dateFrom}">${day}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/drive.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${tripPoint.type}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">Drive Chamonix</h3>
+        <h3 class="event__title">${eventTitle}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="2019-03-18T14:30">14:30</time>
+            <time class="event__start-time" datetime="${tripPoint.dateFrom}">${startTime}</time>
             &mdash;
-            <time class="event__end-time" datetime="2019-03-18T16:05">16:05</time>
+            <time class="event__end-time" datetime="${tripPoint.dateTo}">${endTime}</time>
           </p>
-          <p class="event__duration">01H 35M</p>
+          <p class="event__duration">${durationTime}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">160</span>
+          &euro;&nbsp;<span class="event__price-value">${tripPoint.basePrice}</span>
         </p>
-        <h4 class="visually-hidden">Offers:</h4>
-        <ul class="event__selected-offers">
-          <li class="event__offer">
-            <span class="event__offer-title">Rent a car</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">200</span>
-          </li>
-        </ul>
         <button class="event__favorite-btn  event__favorite-btn--active" type="button">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -43,8 +42,12 @@ function createTripPointTemplate() {
 }
 
 export default class TripPointView {
+  constructor({tripPoint}) {
+    this.tripPoint = tripPoint;
+  }
+
   getTemplate() {
-    return createTripPointTemplate();
+    return createTripPointTemplate(this.tripPoint);
   }
 
   getElement() {
