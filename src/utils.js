@@ -2,8 +2,8 @@ import dayjs from 'dayjs';
 
 const DAY_FORMAT = 'MMM DD';
 const TIME_FORMAT = 'HH:mm';
-const DURATION_FORMAT = 'DD HH:mm';
 const FULL_DATE_TIME_FORMAT = 'DD/MM/YY HH:mm';
+const DURATION_FORMAT = 'HH[H] mm[M]';
 
 function toDay(dateTime) {
   return dateTime ? dayjs(dateTime).format(DAY_FORMAT) : '';
@@ -20,7 +20,7 @@ function toFullDateTime(dateTime) {
 function duration(start, end) {
   const startDate = dayjs(start);
   const endDate = dayjs(end);
-  return dayjs(startDate.diff(endDate)).format(DURATION_FORMAT);
+  return dayjs(endDate.diff(startDate, 'm')).format(DURATION_FORMAT);
 }
 
 function capitalize(str) {
