@@ -1,12 +1,12 @@
 import {createElement} from '../render.js';
-import {duration, toDay, toTime} from '../utils';
+import {capitalize, duration, toDay, toTime} from '../utils';
 
 function createTripPointTemplate(tripPoint) {
   const day = toDay(tripPoint.dateFrom);
   const startTime = toTime(tripPoint.dateFrom);
   const endTime = toTime(tripPoint.dateTo);
   const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
-  const eventTitle = `${tripPoint.type[0].toUpperCase() + tripPoint.type.slice(1)} ${tripPoint.destination.name}`;
+  const eventTitle = `${capitalize(tripPoint.type)} ${tripPoint.destination.name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
