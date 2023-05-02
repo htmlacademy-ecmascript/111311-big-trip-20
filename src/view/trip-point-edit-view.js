@@ -1,5 +1,5 @@
-import {createElement} from '../render.js';
 import {capitalize, toFullDateTime} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 const BLANK_POINT =
   {
@@ -157,24 +157,13 @@ function createTripPointEditTemplate(tripPoint) {
   );
 }
 
-export default class TripPointEditView {
+export default class TripPointEditView extends AbstractView {
   constructor({tripPoint = BLANK_POINT}) {
+    super();
     this.tripPoint = tripPoint;
   }
 
-  getTemplate() {
+  get template() {
     return createTripPointEditTemplate(this.tripPoint);
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }

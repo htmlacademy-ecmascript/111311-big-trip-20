@@ -1,8 +1,8 @@
 import TripSortView from '../view/trip-sort-view';
-import {render} from '../render';
 import TripPointListView from '../view/trip-point-list-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import TripPointView from '../view/trip-point-view';
+import {render} from '../framework/render';
 
 
 export default class TripPointsPresenter {
@@ -19,10 +19,10 @@ export default class TripPointsPresenter {
     render(this.tripSortComponent, this.container);
     render(this.tripPointListComponent, this.container);
 
-    render(new TripPointEditView({tripPoint: this.tripPoints[0]}), this.tripPointListComponent.getElement());
+    render(new TripPointEditView({tripPoint: this.tripPoints[0]}), this.tripPointListComponent.element);
 
     for (const tripPoint of this.tripPoints) {
-      render(new TripPointView({tripPoint: tripPoint}), this.tripPointListComponent.getElement());
+      render(new TripPointView({tripPoint: tripPoint}), this.tripPointListComponent.element);
     }
   }
 }
