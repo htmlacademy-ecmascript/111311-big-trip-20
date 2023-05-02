@@ -158,12 +158,14 @@ function createTripPointEditTemplate(tripPoint) {
 }
 
 export default class TripPointEditView extends AbstractView {
+  #tripPoint = null;
+
   constructor({tripPoint = BLANK_POINT}) {
     super();
-    this.tripPoint = tripPoint;
+    this.#tripPoint = tripPoint;
   }
 
   get template() {
-    return createTripPointEditTemplate(this.tripPoint);
+    return createTripPointEditTemplate(this.#tripPoint);
   }
 }

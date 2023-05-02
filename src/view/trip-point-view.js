@@ -43,12 +43,14 @@ function createTripPointTemplate(tripPoint) {
 }
 
 export default class TripPointView extends AbstractView {
+  #tripPoint = null;
+
   constructor({tripPoint}) {
     super();
-    this.tripPoint = tripPoint;
+    this.#tripPoint = tripPoint;
   }
 
   get template() {
-    return createTripPointTemplate(this.tripPoint);
+    return createTripPointTemplate(this.#tripPoint);
   }
 }
