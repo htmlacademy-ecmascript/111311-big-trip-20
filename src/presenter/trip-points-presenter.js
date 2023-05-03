@@ -3,6 +3,7 @@ import TripPointListView from '../view/trip-point-list-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import TripPointView from '../view/trip-point-view';
 import {render, replace} from '../framework/render';
+import EmptyTripPointsView from '../view/empty-trip-points-view';
 
 
 export default class TripPointsPresenter {
@@ -21,6 +22,12 @@ export default class TripPointsPresenter {
   init() {
     const tripPoints = [...this.#tripPointModel.tripPoints];
     render(this.#tripSortComponent, this.#container);
+
+    if (tripPoints.length === 0) {
+      render(new EmptyTripPointsView(), this.#container);
+      return;
+    }
+
     render(this.#tripPointListComponent, this.#container);
 
     for (const tripPoint of tripPoints) {
