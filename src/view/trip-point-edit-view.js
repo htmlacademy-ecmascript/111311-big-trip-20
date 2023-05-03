@@ -159,13 +159,33 @@ function createTripPointEditTemplate(tripPoint) {
 
 export default class TripPointEditView extends AbstractView {
   #tripPoint = null;
+  #handleRollupClick = null;
+  #handleFormSubmit = null;
 
-  constructor({tripPoint = BLANK_POINT}) {
+  constructor({tripPoint = BLANK_POINT, onRollupClick, onFormSubmit}) {
     super();
     this.#tripPoint = tripPoint;
+    this.#handleRollupClick = onRollupClick;
+    this.#handleFormSubmit = onFormSubmit;
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rollupClickHandler);
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
   }
 
   get template() {
     return createTripPointEditTemplate(this.#tripPoint);
   }
+
+  #rollupClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupClick();
+  };
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 }
