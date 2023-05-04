@@ -13,3 +13,4 @@ export default class EmptyTripPointsView extends AbstractView {
     return createEmptyTripPointsTemplate();
   }
 }
+
