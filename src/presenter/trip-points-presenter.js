@@ -1,77 +1,65 @@
-import TripSortView from '../view/trip-sort-view';
-import TripPointListView from '../view/trip-point-list-view';
-import TripPointEditView from '../view/trip-point-edit-view';
 import TripPointView from '../view/trip-point-view';
+import TripPointEditView from '../view/trip-point-edit-view';
 import {render, replace} from '../framework/render';
-import EmptyTripPointsView from '../view/empty-trip-points-view';
-
 
 export default class TripPointsPresenter {
-  #container = null;
-  #tripPointModel = null;
+  #tripPointsContainer = null;
 
-  #tripSortComponent = new TripSortView();
-  #tripPointListComponent = new TripPointListView();
+  #tripPointComponent = null;
+  #tripPointEditComponent = null;
 
+  #tripPoint = null;
 
-  constructor({container, tripPointModel}) {
-    this.#container = container;
-    this.#tripPointModel = tripPointModel;
+  constructor({tripPointsContainer}) {
+    this.#tripPointsContainer = tripPointsContainer;
   }
 
-  init() {
-    const tripPoints = [...this.#tripPointModel.tripPoints];
-    render(this.#tripSortComponent, this.#container);
+  init(tripPoint) {
+    this.#tripPoint = tripPoint;
 
-    if (tripPoints.length === 0) {
-      render(new EmptyTripPointsView(), this.#container);
-      return;
-    }
-
-    render(this.#tripPointListComponent, this.#container);
-
-    for (const tripPoint of tripPoints) {
-      this.#renderTripPoint(tripPoint);
-    }
-  }
-
-  #renderTripPoint(tripPoint) {
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceFormToPoint();
-        document.removeEventListener('keydown', escKeyDownHandler);
+    this.#tripPointComponent = new TripPointView({
+      tripPoint,
+      onRollupClick: () => {
+        this.#replacePointToForm();
+        document.addEventListener('keydown', this.#escKeyDownHandler);
       }
+    });
+
+    this.#tripPointEditComponent = new TripPointEditView({
+      tripPoint,
+      onRollupClick: this.#handleRollupClick(),
+      onFormSubmit: this.#handleFormSubmit()
+    });
+
+    render(this.#tripPointComponent, this.#tripPointsContainer);
+  }
+
+  #handleFormSubmit() {
+    return () => {
+      this.#replaceFormToPoint();
+      document.removeEventListener('keydown', this.#escKeyDownHandler);
     };
+  }
 
-    const tripPointComponent = new TripPointView({
-      tripPoint,
-      onRollupClick: () => {
-        replacePointToForm();
-        document.addEventListener('keydown', escKeyDownHandler);
-      }
-    });
+  #handleRollupClick() {
+    return () => {
+      this.#replaceFormToPoint();
+      document.removeEventListener('keydown', this.#escKeyDownHandler);
+    };
+  }
 
-    const tripPointEditComponent = new TripPointEditView({
-      tripPoint,
-      onRollupClick: () => {
-        replaceFormToPoint();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      },
-      onFormSubmit: () => {
-        replaceFormToPoint();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    });
-
-    function replaceFormToPoint() {
-      replace(tripPointComponent, tripPointEditComponent);
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.#replaceFormToPoint();
     }
+  };
 
-    function replacePointToForm() {
-      replace(tripPointEditComponent, tripPointComponent);
-    }
+  #replaceFormToPoint() {
+    replace(this.#tripPointComponent, this.#tripPointEditComponent);
+  }
 
-    render(tripPointComponent, this.#tripPointListComponent.element);
+  #replacePointToForm() {
+    replace(this.#tripPointEditComponent, this.#tripPointComponent);
   }
 }
