@@ -1,6 +1,6 @@
 import {tripPointsStub} from '../stub/trip-points-stub';
 
-export default class TripPointModel {
+export default class TripPointsModel {
   get tripPoints() {
     const result = [];
     for (const tripPointResponse of tripPointsStub) {

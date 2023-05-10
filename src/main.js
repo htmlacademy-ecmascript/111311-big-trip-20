@@ -1,5 +1,5 @@
 import TripFiltersView from './view/trip-filters-view';
-import TripPointModel from './model/trip-point-model';
+import TripPointsModel from './model/trip-points-model';
 import TripInfoView from './view/trip-info-view';
 import {render, RenderPosition} from './framework/render';
 import MainPresenter from './presenter/main-presenter';
@@ -13,7 +13,7 @@ const tripPointsElement = document.querySelector('.trip-events');
 render(new TripInfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
 render(new TripFiltersView(), tripControlsFiltersElement, RenderPosition.BEFOREEND);
 
-const tripPointModel = new TripPointModel();
+const tripPointModel = new TripPointsModel();
 const mainPresenter = new MainPresenter({
   container: tripPointsElement,
   tripPointModel: tripPointModel
