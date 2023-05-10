@@ -34,6 +34,9 @@ function createEventTypesTemplate() {
 
 function createPhotosTemplate(photos) {
   let result = '';
+  if (!photos) {
+    return result;
+  }
 
   for (const photo of photos) {
     result += `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`;
