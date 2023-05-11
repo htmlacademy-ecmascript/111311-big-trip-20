@@ -4,13 +4,13 @@ export default class TripPointsModel {
   get tripPoints() {
     const result = [];
     for (const tripPointResponse of tripPointsStub) {
-      result.push(this.#convertResponse(tripPointResponse));
+      result.push(this.#convert(tripPointResponse));
     }
 
     return result;
   }
 
-  #convertResponse(tripPointResponse) {
+  #convert(tripPointResponse) {
     const result = {
       ...tripPointResponse,
       basePrice: tripPointResponse.base_price,

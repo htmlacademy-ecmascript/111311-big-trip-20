@@ -3,22 +3,27 @@ import TripPointEditView from '../view/trip-point-edit-view';
 import {render, replace} from '../framework/render';
 
 export default class TripPointsPresenter {
-  #tripPointsContainer = null;
+  #tripPointsContainer;
 
-  #tripPointComponent = null;
-  #tripPointEditComponent = null;
+  #tripPointComponent;
+  #tripPointEditComponent;
 
-  #tripPoint = null;
+  #tripPoint;
+  #idToDestinationMap;
+  #idToOfferMap;
 
   constructor({tripPointsContainer}) {
     this.#tripPointsContainer = tripPointsContainer;
   }
 
-  init(tripPoint) {
+  init(tripPoint, idToDestinationMap, idToOfferMap) {
     this.#tripPoint = tripPoint;
+    this.#idToDestinationMap = idToDestinationMap;
+    this.#idToOfferMap = idToOfferMap;
 
     this.#tripPointComponent = new TripPointView({
       tripPoint,
+      idToDestinationMap,
       onRollupClick: () => {
         this.#replacePointToForm();
         document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -27,6 +32,8 @@ export default class TripPointsPresenter {
 
     this.#tripPointEditComponent = new TripPointEditView({
       tripPoint,
+      idToDestinationMap,
+      idToOfferMap,
       onRollupClick: this.#handleRollupClick(),
       onFormSubmit: this.#handleFormSubmit()
     });

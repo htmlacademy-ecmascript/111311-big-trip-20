@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 const DAY_FORMAT = 'MMM DD';
 const TIME_FORMAT = 'HH:mm';
 const FULL_DATE_TIME_FORMAT = 'DD/MM/YY HH:mm';
-const DURATION_FORMAT = 'HH[H] mm[M]';
 
 function toDay(dateTime) {
   return dateTime ? dayjs(dateTime).format(DAY_FORMAT) : '';
@@ -20,7 +19,30 @@ function toFullDateTime(dateTime) {
 function duration(start, end) {
   const startDate = dayjs(start);
   const endDate = dayjs(end);
-  return dayjs(endDate.diff(startDate, 'm')).format(DURATION_FORMAT);
+  const totalMinutes = endDate.diff(startDate, 'm');
+  const hours = totalMinutes / 60;
+  const minutes = totalMinutes % 60;
+  let resultTemplate = '';
+  if (hours > 0) {
+    if (hours < 10) {
+      resultTemplate += '0';
+    }
+
+    resultTemplate += hours;
+    resultTemplate += 'H';
+  }
+
+  if (minutes > 0) {
+    resultTemplate += ' ';
+    if (minutes < 10) {
+      resultTemplate += '0';
+    }
+
+    resultTemplate += minutes;
+    resultTemplate += 'M';
+  }
+
+  return resultTemplate;
 }
 
 function capitalize(str) {

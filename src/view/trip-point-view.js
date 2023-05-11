@@ -1,12 +1,12 @@
 import {capitalize, duration, toDay, toTime} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createTripPointTemplate(tripPoint) {
+function createTripPointTemplate(tripPoint, idToDestinationMap) {
   const day = toDay(tripPoint.dateFrom);
   const startTime = toTime(tripPoint.dateFrom);
   const endTime = toTime(tripPoint.dateTo);
   const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
-  const eventTitle = `${capitalize(tripPoint.type)} ${tripPoint.destination.name}`;
+  const eventTitle = `${capitalize(tripPoint.type)} ${idToDestinationMap.get(tripPoint.destination).name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
@@ -43,12 +43,14 @@ function createTripPointTemplate(tripPoint) {
 }
 
 export default class TripPointView extends AbstractView {
-  #tripPoint = null;
-  #handleRollupClick = null;
+  #tripPoint;
+  #idToDestinationMap;
+  #handleRollupClick;
 
-  constructor({tripPoint, onRollupClick}) {
+  constructor({tripPoint, idToDestinationMap, onRollupClick}) {
     super();
     this.#tripPoint = tripPoint;
+    this.#idToDestinationMap = idToDestinationMap;
     this.#handleRollupClick = onRollupClick;
 
     this.element.querySelector('.event__rollup-btn')
@@ -56,7 +58,7 @@ export default class TripPointView extends AbstractView {
   }
 
   get template() {
-    return createTripPointTemplate(this.#tripPoint);
+    return createTripPointTemplate(this.#tripPoint, this.#idToDestinationMap);
   }
 
   #editCLickHandler = (evt) => {
