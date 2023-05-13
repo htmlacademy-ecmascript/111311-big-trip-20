@@ -1,6 +1,6 @@
 import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
-import {render, replace} from '../framework/render';
+import {remove, render, replace} from '../framework/render';
 
 export default class TripPointsPresenter {
   #tripPointsContainer;
@@ -18,17 +18,14 @@ export default class TripPointsPresenter {
 
   init(tripPoint, idToDestinationMap, idToOfferMap) {
     this.#tripPoint = tripPoint;
+
+    const prevTripPointComponent = this.#tripPointComponent;
+    const prevTripPointEditComponent = this.#tripPointEditComponent;
+
     this.#idToDestinationMap = idToDestinationMap;
     this.#idToOfferMap = idToOfferMap;
 
-    this.#tripPointComponent = new TripPointView({
-      tripPoint,
-      idToDestinationMap,
-      onRollupClick: () => {
-        this.#replacePointToForm();
-        document.addEventListener('keydown', this.#escKeyDownHandler);
-      }
-    });
+    this.#tripPointComponent = this.#createTripPointView();
 
     this.#tripPointEditComponent = new TripPointEditView({
       tripPoint,
@@ -38,7 +35,37 @@ export default class TripPointsPresenter {
       onFormSubmit: this.#handleFormSubmit()
     });
 
+    if (!prevTripPointComponent || !prevTripPointEditComponent) {
+      render(this.#tripPointComponent, this.#tripPointsContainer);
+      return;
+    }
+
+    if (this.#tripPointsContainer.contains(prevTripPointComponent.element)) {
+      replace(this.#tripPointComponent, prevTripPointComponent);
+    }
+
+    if (this.#tripPointsContainer.contains(prevTripPointEditComponent.element)) {
+      replace(this.#tripPointEditComponent, prevTripPointEditComponent);
+    }
+
     render(this.#tripPointComponent, this.#tripPointsContainer);
+
+    remove(prevTripPointComponent);
+    remove(prevTripPointEditComponent);
+  }
+
+  #createTripPointView() {
+    return new TripPointView({
+      tripPoint: this.#tripPoint,
+      idToDestinationMap: this.#idToDestinationMap,
+      onRollupClick: () => {
+        this.#replacePointToForm();
+        document.addEventListener('keydown', this.#escKeyDownHandler);
+      },
+      onFavoriteClick: () => {
+        this.#toggleFavorite();
+      }
+    });
   }
 
   #handleFormSubmit() {
@@ -68,5 +95,10 @@ export default class TripPointsPresenter {
 
   #replacePointToForm() {
     replace(this.#tripPointEditComponent, this.#tripPointComponent);
+  }
+
+  #toggleFavorite() {
+    this.#tripPoint.isFavorite = !this.#tripPoint.isFavorite;
+    replace(this.#tripPointComponent, this.#createTripPointView());
   }
 }
