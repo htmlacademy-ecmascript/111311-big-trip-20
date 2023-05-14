@@ -34,6 +34,9 @@ function createEventTypesTemplate() {
 
 function createPhotosTemplate(photos) {
   let result = '';
+  if (!photos) {
+    return result;
+  }
 
   for (const photo of photos) {
     result += `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`;
@@ -43,6 +46,10 @@ function createPhotosTemplate(photos) {
 }
 
 function createDestinationTemplate(destination) {
+  if (!destination) {
+    return '';
+  }
+
   const photosTemplate = createPhotosTemplate(destination.pictures);
 
   return (
@@ -73,19 +80,29 @@ function createOfferTemplate(offer) {
 }
 
 function createOffersTemplate(offers) {
-  let result = '';
+  if (!offers || offers.length === 0) {
+    return '';
+  }
+
+  let result = `
+    <section class="event__section  event__section--offers">
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+        <div class="event__available-offers">`;
+
   for (const offer of offers) {
     result += createOfferTemplate(offer);
   }
 
+  result += '</div></section>';
   return result;
 }
 
-function createTripPointEditTemplate(tripPoint) {
+function createTripPointEditTemplate(tripPoint, idToDestinationMap, idToOfferMap) {
   const startDateTime = toFullDateTime(tripPoint.dateFrom);
   const endDateTime = toFullDateTime(tripPoint.dateTo);
-  const destinationTemplate = createDestinationTemplate(tripPoint.destination);
-  const offersTemplate = createOffersTemplate(tripPoint.offers);
+  const destination = idToDestinationMap.get(tripPoint.destination);
+  const destinationTemplate = createDestinationTemplate(destination);
+  const offersTemplate = createOffersTemplate(tripPoint.offers.map((offer) => idToOfferMap.get(offer)));
   const eventTypesTemplate = createEventTypesTemplate();
 
   return (
@@ -111,7 +128,7 @@ function createTripPointEditTemplate(tripPoint) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${capitalize(tripPoint.type)}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${tripPoint.destination.name}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
               <option value="Amsterdam"></option>
               <option value="Geneva"></option>
@@ -142,14 +159,7 @@ function createTripPointEditTemplate(tripPoint) {
           </button>
         </header>
         <section class="event__details">
-          <section class="event__section  event__section--offers">
-            <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-            <div class="event__available-offers">
-              ${offersTemplate}
-            </div>
-          </section>
-
+          ${offersTemplate}
           ${destinationTemplate}
         </section>
       </form>
@@ -158,13 +168,21 @@ function createTripPointEditTemplate(tripPoint) {
 }
 
 export default class TripPointEditView extends AbstractView {
-  #tripPoint = null;
-  #handleRollupClick = null;
-  #handleFormSubmit = null;
+  #tripPoint;
+  #idToDestinationMap;
+  #idToOfferMap;
 
-  constructor({tripPoint = BLANK_POINT, onRollupClick, onFormSubmit}) {
+  #handleRollupClick;
+  #handleFormSubmit;
+
+  constructor({
+    tripPoint = BLANK_POINT, idToDestinationMap, idToOfferMap, onRollupClick, onFormSubmit
+  }) {
     super();
     this.#tripPoint = tripPoint;
+    this.#idToDestinationMap = idToDestinationMap;
+    this.#idToOfferMap = idToOfferMap;
+
     this.#handleRollupClick = onRollupClick;
     this.#handleFormSubmit = onFormSubmit;
 
@@ -176,7 +194,7 @@ export default class TripPointEditView extends AbstractView {
   }
 
   get template() {
-    return createTripPointEditTemplate(this.#tripPoint);
+    return createTripPointEditTemplate(this.#tripPoint, this.#idToDestinationMap, this.#idToOfferMap);
   }
 
   #rollupClickHandler = (evt) => {

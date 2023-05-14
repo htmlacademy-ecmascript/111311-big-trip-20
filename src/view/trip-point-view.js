@@ -1,12 +1,12 @@
 import {capitalize, duration, toDay, toTime} from '../utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createTripPointTemplate(tripPoint) {
+function createTripPointTemplate(tripPoint, idToDestinationMap) {
   const day = toDay(tripPoint.dateFrom);
   const startTime = toTime(tripPoint.dateFrom);
   const endTime = toTime(tripPoint.dateTo);
   const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
-  const eventTitle = `${capitalize(tripPoint.type)} ${tripPoint.destination.name}`;
+  const eventTitle = `${capitalize(tripPoint.type)} ${idToDestinationMap.get(tripPoint.destination).name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
 
   return (
@@ -43,24 +43,28 @@ function createTripPointTemplate(tripPoint) {
 }
 
 export default class TripPointView extends AbstractView {
-  #tripPoint = null;
-  #handleRollupClick = null;
+  #tripPoint;
+  #idToDestinationMap;
 
-  constructor({tripPoint, onRollupClick}) {
+  constructor({tripPoint, idToDestinationMap, onRollupClick, onFavoriteClick}) {
     super();
     this.#tripPoint = tripPoint;
-    this.#handleRollupClick = onRollupClick;
+    this.#idToDestinationMap = idToDestinationMap;
 
     this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#editCLickHandler);
+      .addEventListener('click', (evt) => {
+        evt.preventDefault();
+        onRollupClick();
+      });
+
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', (evt) => {
+        evt.preventDefault();
+        onFavoriteClick();
+      });
   }
 
   get template() {
-    return createTripPointTemplate(this.#tripPoint);
+    return createTripPointTemplate(this.#tripPoint, this.#idToDestinationMap);
   }
-
-  #editCLickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleRollupClick();
-  };
 }
