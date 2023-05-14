@@ -48,11 +48,16 @@ export default class MainPresenter {
     this.#renderTripPoints();
   }
 
+  #handleModeChange = () => {
+    this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.resetView());
+  };
+
   #renderTripPoints() {
     for (const tripPoint of this.#tripPoints) {
       const tripPointsPresenter = new TripPointsPresenter({
         tripPointsContainer: this.#tripPointListComponent.element,
-        onDataChange: this.#handleTripPointChange
+        onDataChange: this.#handleTripPointChange,
+        onModeChange: this.#handleModeChange
       });
 
       tripPointsPresenter.init(tripPoint, this.#idToDestinationMap, this.#idToOfferMap);

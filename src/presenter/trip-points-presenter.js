@@ -2,9 +2,15 @@ import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
 
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING'
+};
+
 export default class TripPointsPresenter {
   #tripPointsContainer;
   #handleDataChange;
+  #handleModeChange;
 
   #tripPointComponent;
   #tripPointEditComponent;
@@ -12,10 +18,12 @@ export default class TripPointsPresenter {
   #tripPoint;
   #idToDestinationMap;
   #idToOfferMap;
+  #mode = Mode.DEFAULT;
 
-  constructor({tripPointsContainer, onDataChange}) {
+  constructor({tripPointsContainer, onDataChange, onModeChange}) {
     this.#tripPointsContainer = tripPointsContainer;
     this.#handleDataChange = onDataChange;
+    this.#handleModeChange = onModeChange;
   }
 
   init(tripPoint, idToDestinationMap, idToOfferMap) {
@@ -42,16 +50,22 @@ export default class TripPointsPresenter {
       return;
     }
 
-    if (this.#tripPointsContainer.contains(prevTripPointComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace(this.#tripPointComponent, prevTripPointComponent);
     }
 
-    if (this.#tripPointsContainer.contains(prevTripPointEditComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace(this.#tripPointEditComponent, prevTripPointEditComponent);
     }
 
     remove(prevTripPointComponent);
     remove(prevTripPointEditComponent);
+  }
+
+  resetView() {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#replaceFormToPoint();
+    }
   }
 
   #createTripPointView() {
@@ -91,9 +105,12 @@ export default class TripPointsPresenter {
 
   #replaceFormToPoint() {
     replace(this.#tripPointComponent, this.#tripPointEditComponent);
+    this.#mode = Mode.DEFAULT;
   }
 
   #replacePointToForm() {
     replace(this.#tripPointEditComponent, this.#tripPointComponent);
+    this.#handleModeChange();
+    this.#mode = Mode.EDITING;
   }
 }
