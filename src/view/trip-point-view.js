@@ -45,24 +45,26 @@ function createTripPointTemplate(tripPoint, idToDestinationMap) {
 export default class TripPointView extends AbstractView {
   #tripPoint;
   #idToDestinationMap;
-  #handleRollupClick;
 
-  constructor({tripPoint, idToDestinationMap, onRollupClick}) {
+  constructor({tripPoint, idToDestinationMap, onRollupClick, onFavoriteClick}) {
     super();
     this.#tripPoint = tripPoint;
     this.#idToDestinationMap = idToDestinationMap;
-    this.#handleRollupClick = onRollupClick;
 
     this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#editCLickHandler);
+      .addEventListener('click', (evt) => {
+        evt.preventDefault();
+        onRollupClick();
+      });
+
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', (evt) => {
+        evt.preventDefault();
+        onFavoriteClick();
+      });
   }
 
   get template() {
     return createTripPointTemplate(this.#tripPoint, this.#idToDestinationMap);
   }
-
-  #editCLickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleRollupClick();
-  };
 }

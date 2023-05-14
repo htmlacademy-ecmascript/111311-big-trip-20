@@ -49,4 +49,8 @@ function capitalize(str) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-export {toDay, toTime, duration, capitalize, toFullDateTime};
+function updateModel(models, updatedModel) {
+  return models.map((item) => item.id === updatedModel.id ? updatedModel : item);
+}
+
+export {toDay, toTime, duration, capitalize, toFullDateTime, updateModel};

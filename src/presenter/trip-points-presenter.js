@@ -4,6 +4,7 @@ import {remove, render, replace} from '../framework/render';
 
 export default class TripPointsPresenter {
   #tripPointsContainer;
+  #handleDataChange;
 
   #tripPointComponent;
   #tripPointEditComponent;
@@ -12,8 +13,9 @@ export default class TripPointsPresenter {
   #idToDestinationMap;
   #idToOfferMap;
 
-  constructor({tripPointsContainer}) {
+  constructor({tripPointsContainer, onDataChange}) {
     this.#tripPointsContainer = tripPointsContainer;
+    this.#handleDataChange = onDataChange;
   }
 
   init(tripPoint, idToDestinationMap, idToOfferMap) {
@@ -48,8 +50,6 @@ export default class TripPointsPresenter {
       replace(this.#tripPointEditComponent, prevTripPointEditComponent);
     }
 
-    render(this.#tripPointComponent, this.#tripPointsContainer);
-
     remove(prevTripPointComponent);
     remove(prevTripPointEditComponent);
   }
@@ -63,7 +63,7 @@ export default class TripPointsPresenter {
         document.addEventListener('keydown', this.#escKeyDownHandler);
       },
       onFavoriteClick: () => {
-        this.#toggleFavorite();
+        this.#handleDataChange({...this.#tripPoint, isFavorite: !this.#tripPoint.isFavorite});
       }
     });
   }
@@ -95,10 +95,5 @@ export default class TripPointsPresenter {
 
   #replacePointToForm() {
     replace(this.#tripPointEditComponent, this.#tripPointComponent);
-  }
-
-  #toggleFavorite() {
-    this.#tripPoint.isFavorite = !this.#tripPoint.isFavorite;
-    replace(this.#tripPointComponent, this.#createTripPointView());
   }
 }

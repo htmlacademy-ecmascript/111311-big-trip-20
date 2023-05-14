@@ -3,24 +3,36 @@ import TripPointListView from '../view/trip-point-list-view';
 import {render} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointsPresenter from './trip-points-presenter';
+import {updateModel} from '../utils';
 
 
 export default class MainPresenter {
   #container;
   #tripPointsModel;
-  #destinationsModel;
-  #offersModel;
-
   #tripSortComponent = new TripSortView();
   #tripPointListComponent = new TripPointListView();
 
   #tripPoints = [];
+  #idToTripPointsPresentersMap = new Map();
+
+  #idToDestinationMap = new Map();
+  #idToOfferMap = new Map();
 
   constructor({container, tripPointsModel, destinationsModel, offersModel}) {
     this.#container = container;
     this.#tripPointsModel = tripPointsModel;
-    this.#destinationsModel = destinationsModel;
-    this.#offersModel = offersModel;
+
+    if (destinationsModel) {
+      for (const destination of destinationsModel.destinations) {
+        this.#idToDestinationMap.set(destination.id, destination);
+      }
+    }
+
+    if (offersModel) {
+      for (const offer of offersModel.offers) {
+        this.#idToOfferMap.set(offer.id, offer);
+      }
+    }
   }
 
   init() {
@@ -37,25 +49,20 @@ export default class MainPresenter {
   }
 
   #renderTripPoints() {
-    const idToDestinationMap = new Map();
-    if (this.#destinationsModel) {
-      for (const destination of this.#destinationsModel.destinations) {
-        idToDestinationMap.set(destination.id, destination);
-      }
-    }
-
-    const idToOfferMap = new Map();
-    if (this.#offersModel) {
-      for (const offer of this.#offersModel.offers) {
-        idToOfferMap.set(offer.id, offer);
-      }
-    }
-
     for (const tripPoint of this.#tripPoints) {
       const tripPointsPresenter = new TripPointsPresenter({
-        tripPointsContainer: this.#tripPointListComponent.element
+        tripPointsContainer: this.#tripPointListComponent.element,
+        onDataChange: this.#handleTripPointChange
       });
-      tripPointsPresenter.init(tripPoint, idToDestinationMap, idToOfferMap);
+
+      tripPointsPresenter.init(tripPoint, this.#idToDestinationMap, this.#idToOfferMap);
+      this.#idToTripPointsPresentersMap.set(tripPoint.id, tripPointsPresenter);
     }
   }
+
+  #handleTripPointChange = (updatedTripPoint) => {
+    this.#tripPoints = updateModel(this.#tripPoints, updatedTripPoint);
+    this.#idToTripPointsPresentersMap.get(updatedTripPoint.id)
+      .init(updatedTripPoint, this.#idToDestinationMap, this.#idToOfferMap);
+  };
 }
