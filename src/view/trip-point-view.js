@@ -1,4 +1,4 @@
-import {capitalize, duration, toDay, toTime} from '../utils';
+import {capitalize, duration, toDay, toTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
 
 function createTripPointTemplate(tripPoint, idToDestinationMap) {

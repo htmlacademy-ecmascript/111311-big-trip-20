@@ -1,5 +1,6 @@
-import {capitalize, toFullDateTime} from '../utils';
+import {capitalize, toFullDateTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
+import {TRIP_POINT_TYPES} from '../constants';
 
 const BLANK_POINT =
   {
@@ -17,10 +18,9 @@ const BLANK_POINT =
   };
 
 function createEventTypesTemplate() {
-  const types = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
   let result = '';
 
-  for (const type of types) {
+  for (const type of TRIP_POINT_TYPES) {
     result += (
       `<div class="event__type-item">
         <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">

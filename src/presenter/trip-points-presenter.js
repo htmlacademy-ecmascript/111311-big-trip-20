@@ -62,6 +62,11 @@ export default class TripPointsPresenter {
     remove(prevTripPointEditComponent);
   }
 
+  destroy() {
+    remove(this.#tripPointComponent);
+    remove(this.#tripPointEditComponent);
+  }
+
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
       this.#replaceFormToPoint();
