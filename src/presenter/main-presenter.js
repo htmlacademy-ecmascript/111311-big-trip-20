@@ -3,17 +3,20 @@ import TripPointListView from '../view/trip-point-list-view';
 import {render} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointsPresenter from './trip-points-presenter';
-import {updateModel} from '../utils';
+import {updateModel} from '../utils/utils';
+import {SortType} from '../constants';
+import {byDayAscComparator, byDurationDescComparator, byPriceDescComparator} from '../utils/sort-utils';
 
 
 export default class MainPresenter {
   #container;
   #tripPointsModel;
-  #tripSortComponent = new TripSortView();
+  #tripSortComponent;
   #tripPointListComponent = new TripPointListView();
 
   #tripPoints = [];
   #idToTripPointsPresentersMap = new Map();
+  #currentSortType = SortType.BY_DAY;
 
   #idToDestinationMap = new Map();
   #idToOfferMap = new Map();
@@ -42,10 +45,46 @@ export default class MainPresenter {
       return;
     }
 
-    render(this.#tripSortComponent, this.#container);
+    this.#renderSort();
     render(this.#tripPointListComponent, this.#container);
 
     this.#renderTripPoints();
+  }
+
+  #handleSortTypeChange = (sortType) => {
+    if (!sortType || this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortTripPoints(sortType);
+    this.#clearTripPoints();
+    this.#renderTripPoints();
+  };
+
+  #sortTripPoints(sortType) {
+    switch (sortType) {
+      case SortType.BY_DAY:
+        this.#tripPoints.sort(byDayAscComparator);
+        break;
+      case SortType.BY_PRICE:
+        this.#tripPoints.sort(byPriceDescComparator);
+        break;
+      case SortType.BY_DURATION:
+        this.#tripPoints.sort(byDurationDescComparator);
+        break;
+      default:
+        break;
+    }
+
+    this.#currentSortType = sortType;
+  }
+
+  #renderSort() {
+    this.#tripSortComponent = new TripSortView({
+      onSortTypeChange: this.#handleSortTypeChange
+    });
+
+    render(this.#tripSortComponent, this.#container);
   }
 
   #handleModeChange = () => {
@@ -63,6 +102,11 @@ export default class MainPresenter {
       tripPointsPresenter.init(tripPoint, this.#idToDestinationMap, this.#idToOfferMap);
       this.#idToTripPointsPresentersMap.set(tripPoint.id, tripPointsPresenter);
     }
+  }
+
+  #clearTripPoints() {
+    this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.destroy());
+    this.#idToTripPointsPresentersMap.clear();
   }
 
   #handleTripPointChange = (updatedTripPoint) => {
