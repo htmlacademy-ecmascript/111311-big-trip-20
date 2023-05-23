@@ -5,7 +5,7 @@ import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointsPresenter from './trip-points-presenter';
 import {updateModel} from '../utils/utils';
 import {SortType} from '../constants';
-import {byDayAscComparator, byDurationDescComparator, byPriceDescComparator} from '../utils/sort-utils';
+import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 
 
 export default class MainPresenter {
@@ -19,7 +19,7 @@ export default class MainPresenter {
   #currentSortType = SortType.BY_DAY;
 
   #idToDestinationMap = new Map();
-  #idToOfferMap = new Map();
+  #typeToOffersMap = new Map();
 
   constructor({container, tripPointsModel, destinationsModel, offersModel}) {
     this.#container = container;
@@ -32,8 +32,8 @@ export default class MainPresenter {
     }
 
     if (offersModel) {
-      for (const offer of offersModel.offers) {
-        this.#idToOfferMap.set(offer.id, offer);
+      for (const offerByType of offersModel.offers) {
+        this.#typeToOffersMap.set(offerByType.type, offerByType.offers);
       }
     }
   }
@@ -64,13 +64,13 @@ export default class MainPresenter {
   #sortTripPoints(sortType) {
     switch (sortType) {
       case SortType.BY_DAY:
-        this.#tripPoints.sort(byDayAscComparator);
+        this.#tripPoints.sort(sortByDayAsc);
         break;
       case SortType.BY_PRICE:
-        this.#tripPoints.sort(byPriceDescComparator);
+        this.#tripPoints.sort(sortByPriceDesc);
         break;
       case SortType.BY_DURATION:
-        this.#tripPoints.sort(byDurationDescComparator);
+        this.#tripPoints.sort(sortByDurationDesc);
         break;
       default:
         break;
@@ -99,7 +99,7 @@ export default class MainPresenter {
         onModeChange: this.#handleModeChange
       });
 
-      tripPointsPresenter.init(tripPoint, this.#idToDestinationMap, this.#idToOfferMap);
+      tripPointsPresenter.init(tripPoint, this.#idToDestinationMap, this.#typeToOffersMap);
       this.#idToTripPointsPresentersMap.set(tripPoint.id, tripPointsPresenter);
     }
   }
@@ -112,6 +112,6 @@ export default class MainPresenter {
   #handleTripPointChange = (updatedTripPoint) => {
     this.#tripPoints = updateModel(this.#tripPoints, updatedTripPoint);
     this.#idToTripPointsPresentersMap.get(updatedTripPoint.id)
-      .init(updatedTripPoint, this.#idToDestinationMap, this.#idToOfferMap);
+      .init(updatedTripPoint, this.#idToDestinationMap, this.#typeToOffersMap);
   };
 }

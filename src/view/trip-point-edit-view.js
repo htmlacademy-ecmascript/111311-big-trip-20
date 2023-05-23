@@ -1,6 +1,6 @@
 import {capitalize, toFullDateTime} from '../utils/utils';
-import AbstractView from '../framework/view/abstract-view';
 import {TRIP_POINT_TYPES} from '../constants';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
 const BLANK_POINT =
   {
@@ -26,6 +26,18 @@ function createEventTypesTemplate() {
         <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
         <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${capitalize(type)}</label>
       </div>`
+    );
+  }
+
+  return result;
+}
+
+function createDestinationsTemplate(idToDestinationMap) {
+  let result = '';
+
+  for (const destination of idToDestinationMap.values()) {
+    result += (
+      `<option value="${destination.name}"></option>`
     );
   }
 
@@ -97,13 +109,14 @@ function createOffersTemplate(offers) {
   return result;
 }
 
-function createTripPointEditTemplate(tripPoint, idToDestinationMap, idToOfferMap) {
+function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffersMap) {
   const startDateTime = toFullDateTime(tripPoint.dateFrom);
   const endDateTime = toFullDateTime(tripPoint.dateTo);
   const destination = idToDestinationMap.get(tripPoint.destination);
   const destinationTemplate = createDestinationTemplate(destination);
-  const offersTemplate = createOffersTemplate(tripPoint.offers.map((offer) => idToOfferMap.get(offer)));
+  const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type));
   const eventTypesTemplate = createEventTypesTemplate();
+  const destinationsTemplate = createDestinationsTemplate(idToDestinationMap);
 
   return (
     `<li class="trip-events__item">
@@ -130,9 +143,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, idToOfferMap
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
+              ${destinationsTemplate}
             </datalist>
           </div>
 
@@ -167,34 +178,29 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, idToOfferMap
   );
 }
 
-export default class TripPointEditView extends AbstractView {
-  #tripPoint;
+export default class TripPointEditView extends AbstractStatefulView {
   #idToDestinationMap;
-  #idToOfferMap;
+  #typeToOffersMap;
 
   #handleRollupClick;
   #handleFormSubmit;
 
   constructor({
-    tripPoint = BLANK_POINT, idToDestinationMap, idToOfferMap, onRollupClick, onFormSubmit
+    tripPoint = BLANK_POINT, idToDestinationMap, typeToOffersMap, onRollupClick, onFormSubmit
   }) {
     super();
-    this.#tripPoint = tripPoint;
+    this._setState(TripPointEditView.parseTripPointToState(tripPoint));
     this.#idToDestinationMap = idToDestinationMap;
-    this.#idToOfferMap = idToOfferMap;
+    this.#typeToOffersMap = typeToOffersMap;
 
     this.#handleRollupClick = onRollupClick;
     this.#handleFormSubmit = onFormSubmit;
 
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#rollupClickHandler);
-
-    this.element.querySelector('form')
-      .addEventListener('submit', this.#formSubmitHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createTripPointEditTemplate(this.#tripPoint, this.#idToDestinationMap, this.#idToOfferMap);
+    return createTripPointEditTemplate(this._state, this.#idToDestinationMap, this.#typeToOffersMap);
   }
 
   #rollupClickHandler = (evt) => {
@@ -206,4 +212,36 @@ export default class TripPointEditView extends AbstractView {
     evt.preventDefault();
     this.#handleFormSubmit();
   };
+
+  static parseTripPointToState(tripPoint) {
+    return {
+      ...tripPoint,
+      type: tripPoint.type,
+      destination: tripPoint.destination,
+    };
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rollupClickHandler);
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+
+    const eventTypes = this.element.querySelectorAll('input[name=event-type]');
+    for (const eventType of eventTypes) {
+      eventType.addEventListener('change', () => {
+        this.updateElement({type: eventType.value});
+      });
+    }
+
+    const destination = this.element.querySelector('input[name=event-destination]');
+    destination.addEventListener('change', () => {
+      for (const d of this.#idToDestinationMap.values()) {
+        if (d.name === destination.value) {
+          this.updateElement({destination: d.id});
+        }
+      }
+    });
+  }
 }
