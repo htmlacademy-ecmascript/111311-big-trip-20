@@ -1,6 +1,9 @@
 import {capitalize, toFullDateTime} from '../utils/utils';
 import {TRIP_POINT_TYPES} from '../constants';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
 
 const BLANK_POINT =
   {
@@ -185,6 +188,9 @@ export default class TripPointEditView extends AbstractStatefulView {
   #handleRollupClick;
   #handleFormSubmit;
 
+  #dateFromDatepicker;
+  #dateToDatepicker;
+
   constructor({
     tripPoint = BLANK_POINT, idToDestinationMap, typeToOffersMap, onRollupClick, onFormSubmit
   }) {
@@ -203,6 +209,14 @@ export default class TripPointEditView extends AbstractStatefulView {
     return createTripPointEditTemplate(this._state, this.#idToDestinationMap, this.#typeToOffersMap);
   }
 
+  static parseTripPointToState(tripPoint) {
+    return {
+      ...tripPoint,
+      type: tripPoint.type,
+      destination: tripPoint.destination,
+    };
+  }
+
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleRollupClick();
@@ -213,13 +227,55 @@ export default class TripPointEditView extends AbstractStatefulView {
     this.#handleFormSubmit();
   };
 
-  static parseTripPointToState(tripPoint) {
-    return {
-      ...tripPoint,
-      type: tripPoint.type,
-      destination: tripPoint.destination,
-    };
+  removeElement() {
+    super.removeElement();
+
+    if (this.#dateFromDatepicker) {
+      this.#dateFromDatepicker.destroy();
+      this.#dateFromDatepicker = null;
+    }
+
+    if (this.#dateToDatepicker) {
+      this.#dateToDatepicker.destroy();
+      this.#dateToDatepicker = null;
+    }
   }
+
+  #setDateFromDatepicker() {
+    this.#dateFromDatepicker = flatpickr(
+      this.element.querySelector('input[name=event-start-time]'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateFrom,
+        onChange: this.#dateFromChangeHandler,
+      },
+    );
+  }
+
+  #dateFromChangeHandler = ([date]) => {
+    this.updateElement({
+      dateFrom: date,
+    });
+  };
+
+  #setDateToDatepicker() {
+    this.#dateToDatepicker = flatpickr(
+      this.element.querySelector('input[name=event-end-time]'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateTo,
+        onChange: this.#dateToChangeHandler,
+      },
+    );
+  }
+
+  #dateToChangeHandler = ([date]) => {
+    this.updateElement({
+      dateTo: date,
+    });
+  };
 
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn')
@@ -243,5 +299,8 @@ export default class TripPointEditView extends AbstractStatefulView {
         }
       }
     });
+
+    this.#setDateFromDatepicker();
+    this.#setDateToDatepicker();
   }
 }
