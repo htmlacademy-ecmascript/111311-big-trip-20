@@ -3,8 +3,7 @@ import TripPointListView from '../view/trip-point-list-view';
 import {render} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointsPresenter from './trip-points-presenter';
-import {updateModel} from '../utils/utils';
-import {SortType} from '../constants';
+import {SortType, UpdateType, UserAction} from '../constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 
 
@@ -14,7 +13,6 @@ export default class MainPresenter {
   #tripSortComponent;
   #tripPointListComponent = new TripPointListView();
 
-  #tripPoints = [];
   #idToTripPointsPresentersMap = new Map();
   #currentSortType = SortType.BY_DAY;
 
@@ -24,6 +22,7 @@ export default class MainPresenter {
   constructor({container, tripPointsModel, destinationsModel, offersModel}) {
     this.#container = container;
     this.#tripPointsModel = tripPointsModel;
+    this.#tripPointsModel.addObserver(this.#handleTripPointsModelEvent);
 
     if (destinationsModel) {
       for (const destination of destinationsModel.destinations) {
@@ -38,9 +37,21 @@ export default class MainPresenter {
     }
   }
 
+  get tripPoints() {
+    switch (this.#currentSortType) {
+      case SortType.BY_DAY:
+        return [...this.#tripPointsModel.tripPoints].sort(sortByDayAsc);
+      case SortType.BY_PRICE:
+        return [...this.#tripPointsModel.tripPoints].sort(sortByPriceDesc);
+      case SortType.BY_DURATION:
+        return [...this.#tripPointsModel.tripPoints].sort(sortByDurationDesc);
+    }
+
+    return this.#tripPointsModel.tripPoints;
+  }
+
   init() {
-    this.#tripPoints = [...this.#tripPointsModel.tripPoints];
-    if (this.#tripPoints.length === 0) {
+    if (this.#tripPointsModel.tripPoints.length === 0) {
       render(new EmptyTripPointsView(), this.#container);
       return;
     }
@@ -51,33 +62,43 @@ export default class MainPresenter {
     this.#renderTripPoints();
   }
 
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_TRIP_POINT:
+        this.#tripPointsModel.updateTripPoint(updateType, update);
+        break;
+      case UserAction.ADD_TRIP_POINT:
+        // ToDo
+        break;
+      case UserAction.DELETE_TRIP_POINT:
+        // ToDo
+        break;
+    }
+  };
+
+  #handleTripPointsModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#tripPointsModel.get(data.id).init(data, this.#idToDestinationMap, this.#typeToOffersMap);
+        break;
+      case UpdateType.MINOR:
+        // ToDo
+        break;
+      case UpdateType.MAJOR:
+        // ToDo
+        break;
+    }
+  };
+
   #handleSortTypeChange = (sortType) => {
     if (!sortType || this.#currentSortType === sortType) {
       return;
     }
 
-    this.#sortTripPoints(sortType);
+    this.#currentSortType = sortType;
     this.#clearTripPoints();
     this.#renderTripPoints();
   };
-
-  #sortTripPoints(sortType) {
-    switch (sortType) {
-      case SortType.BY_DAY:
-        this.#tripPoints.sort(sortByDayAsc);
-        break;
-      case SortType.BY_PRICE:
-        this.#tripPoints.sort(sortByPriceDesc);
-        break;
-      case SortType.BY_DURATION:
-        this.#tripPoints.sort(sortByDurationDesc);
-        break;
-      default:
-        break;
-    }
-
-    this.#currentSortType = sortType;
-  }
 
   #renderSort() {
     this.#tripSortComponent = new TripSortView({
@@ -92,10 +113,10 @@ export default class MainPresenter {
   };
 
   #renderTripPoints() {
-    for (const tripPoint of this.#tripPoints) {
+    for (const tripPoint of this.#tripPointsModel.tripPoints) {
       const tripPointsPresenter = new TripPointsPresenter({
         tripPointsContainer: this.#tripPointListComponent.element,
-        onDataChange: this.#handleTripPointChange,
+        onDataChange: this.#handleViewAction,
         onModeChange: this.#handleModeChange
       });
 
@@ -108,10 +129,4 @@ export default class MainPresenter {
     this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.destroy());
     this.#idToTripPointsPresentersMap.clear();
   }
-
-  #handleTripPointChange = (updatedTripPoint) => {
-    this.#tripPoints = updateModel(this.#tripPoints, updatedTripPoint);
-    this.#idToTripPointsPresentersMap.get(updatedTripPoint.id)
-      .init(updatedTripPoint, this.#idToDestinationMap, this.#typeToOffersMap);
-  };
 }

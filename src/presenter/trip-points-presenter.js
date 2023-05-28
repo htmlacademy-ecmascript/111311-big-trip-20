@@ -1,6 +1,7 @@
 import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
+import {UpdateType, UserAction} from '../constants';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -39,8 +40,8 @@ export default class TripPointsPresenter {
       tripPoint,
       idToDestinationMap,
       typeToOffersMap,
-      onRollupClick: this.#handleRollupClick(),
-      onFormSubmit: this.#handleFormSubmit()
+      onRollupClick: this.#handleRollupClick,
+      onFormSubmit: this.#handleFormSubmit
     });
 
     if (!prevTripPointComponent || !prevTripPointEditComponent) {
@@ -80,22 +81,28 @@ export default class TripPointsPresenter {
         document.addEventListener('keydown', this.#escKeyDownHandler);
       },
       onFavoriteClick: () => {
-        this.#handleDataChange({...this.#tripPoint, isFavorite: !this.#tripPoint.isFavorite});
+        this.#handleDataChange(
+          UserAction.UPDATE_TRIP_POINT,
+          UpdateType.MINOR,
+          {...this.#tripPoint, isFavorite: !this.#tripPoint.isFavorite}
+        );
       }
     });
   }
 
-  #handleFormSubmit() {
-    return () => {
-      this.#replaceFormToPoint();
-    };
-  }
+  #handleFormSubmit = (tripPoint) => {
+    this.#handleDataChange(
+      UserAction.UPDATE_TRIP_POINT,
+      UpdateType.MINOR,
+      tripPoint
+    );
 
-  #handleRollupClick() {
-    return () => {
-      this.#replaceFormToPoint();
-    };
-  }
+    this.#replaceFormToPoint();
+  };
+
+  #handleRollupClick = () => {
+    this.#replaceFormToPoint();
+  };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
