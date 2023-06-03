@@ -84,13 +84,11 @@ export default class MainPresenter {
   #handleTripPointsModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#tripPointsModel.get(data.id).init(data, this.#idToDestinationMap, this.#typeToOffersMap);
-        break;
-      case UpdateType.MINOR:
-
+        this.#idToTripPointsPresentersMap.get(data.id).init(data, this.#idToDestinationMap, this.#typeToOffersMap);
         break;
       case UpdateType.MAJOR:
-        // ToDo
+        this.#clearMain();
+        this.#renderMain();
         break;
     }
   };

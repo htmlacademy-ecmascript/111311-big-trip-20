@@ -20,7 +20,7 @@ function duration(start, end) {
   const startDate = dayjs(start);
   const endDate = dayjs(end);
   const totalMinutes = endDate.diff(startDate, 'm');
-  const hours = totalMinutes / 60;
+  const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   let resultTemplate = '';
   if (hours > 0) {
@@ -45,6 +45,10 @@ function duration(start, end) {
   return resultTemplate;
 }
 
+function areDatesEqual(d1, d2) {
+  return (d1 === d2) || dayjs(d1).isSame(d2);
+}
+
 function capitalize(str) {
   if (!str) {
     return str;
@@ -53,4 +57,4 @@ function capitalize(str) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-export {toDay, toTime, duration, capitalize, toFullDateTime};
+export {toDay, toTime, duration, capitalize, toFullDateTime, areDatesEqual};

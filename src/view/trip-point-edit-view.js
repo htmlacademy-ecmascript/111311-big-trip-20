@@ -187,12 +187,13 @@ export default class TripPointEditView extends AbstractStatefulView {
 
   #handleRollupClick;
   #handleFormSubmit;
+  #handleDeleteClick;
 
   #dateFromDatepicker;
   #dateToDatepicker;
 
   constructor({
-    tripPoint = BLANK_POINT, idToDestinationMap, typeToOffersMap, onRollupClick, onFormSubmit
+    tripPoint = BLANK_POINT, idToDestinationMap, typeToOffersMap, onRollupClick, onFormSubmit, onDeleteClick
   }) {
     super();
     this._setState(TripPointEditView.parseTripPointToState(tripPoint));
@@ -201,6 +202,7 @@ export default class TripPointEditView extends AbstractStatefulView {
 
     this.#handleRollupClick = onRollupClick;
     this.#handleFormSubmit = onFormSubmit;
+    this.#handleDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
   }
@@ -217,6 +219,10 @@ export default class TripPointEditView extends AbstractStatefulView {
     };
   }
 
+  static parseStateToTripPoint(state) {
+    return {...state};
+  }
+
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleRollupClick();
@@ -224,7 +230,7 @@ export default class TripPointEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(TripPointEditView.parseTripPointToState(this._state));
+    this.#handleFormSubmit(TripPointEditView.parseStateToTripPoint(this._state));
   };
 
   removeElement() {
@@ -277,12 +283,23 @@ export default class TripPointEditView extends AbstractStatefulView {
     });
   };
 
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(TripPointEditView.parseStateToTripPoint(this._state));
+  };
+
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#rollupClickHandler);
 
     this.element.querySelector('form')
       .addEventListener('submit', this.#formSubmitHandler);
+
+    this.element.querySelector('.event__reset-btn')
+      .addEventListener('click', this.#formDeleteClickHandler);
+
+    this.element.querySelector('input[name=event-price]')
+      .addEventListener('change', this.#priceChangeHandler);
 
     const eventTypes = this.element.querySelectorAll('input[name=event-type]');
     for (const eventType of eventTypes) {
@@ -303,4 +320,11 @@ export default class TripPointEditView extends AbstractStatefulView {
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
   }
+
+  #priceChangeHandler = (evt) => {
+    evt.preventDefault();
+    this._setState({
+      basePrice: evt.target.value,
+    });
+  };
 }

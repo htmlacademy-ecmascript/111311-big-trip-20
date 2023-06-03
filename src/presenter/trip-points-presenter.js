@@ -2,6 +2,7 @@ import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
 import {UpdateType, UserAction} from '../constants';
+import {areDatesEqual} from '../utils/utils';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -41,7 +42,8 @@ export default class TripPointsPresenter {
       idToDestinationMap,
       typeToOffersMap,
       onRollupClick: this.#handleRollupClick,
-      onFormSubmit: this.#handleFormSubmit
+      onFormSubmit: this.#handleFormSubmit,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (!prevTripPointComponent || !prevTripPointEditComponent) {
@@ -90,14 +92,27 @@ export default class TripPointsPresenter {
     });
   }
 
-  #handleFormSubmit = (tripPoint) => {
+  #handleFormSubmit = (updatedTripPoint) => {
+    const isMajorUpdate =
+      !areDatesEqual(this.#tripPoint.dateFrom, updatedTripPoint.dateFrom)
+      || !areDatesEqual(this.#tripPoint.dateTo, updatedTripPoint.dateTo)
+      || this.#tripPoint.basePrice !== updatedTripPoint.basePrice;
+
     this.#handleDataChange(
       UserAction.UPDATE_TRIP_POINT,
-      UpdateType.MINOR,
-      tripPoint
+      isMajorUpdate ? UpdateType.MAJOR : UpdateType.PATCH,
+      updatedTripPoint
     );
 
     this.#replaceFormToPoint();
+  };
+
+  #handleDeleteClick = (tripPoint) => {
+    this.#handleDataChange(
+      UserAction.DELETE_TRIP_POINT,
+      UpdateType.MAJOR,
+      tripPoint
+    );
   };
 
   #handleRollupClick = () => {
