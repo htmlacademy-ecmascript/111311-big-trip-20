@@ -17,4 +17,11 @@ const UpdateType = {
   MAJOR: 'MAJOR',
 };
 
-export {TRIP_POINT_TYPES, SortType, UpdateType, UserAction};
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+export {TRIP_POINT_TYPES, SortType, UpdateType, UserAction, FilterType};

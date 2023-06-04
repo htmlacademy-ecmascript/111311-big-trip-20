@@ -19,6 +19,7 @@ export default class TripPointsPresenter {
 
   #tripPoint;
   #idToDestinationMap;
+  #typeToOffersMap;
   #mode = Mode.DEFAULT;
 
   constructor({tripPointsContainer, onDataChange, onModeChange}) {
@@ -34,6 +35,7 @@ export default class TripPointsPresenter {
     const prevTripPointEditComponent = this.#tripPointEditComponent;
 
     this.#idToDestinationMap = idToDestinationMap;
+    this.#typeToOffersMap = typeToOffersMap;
 
     this.#tripPointComponent = this.#createTripPointView();
 
@@ -78,6 +80,7 @@ export default class TripPointsPresenter {
     return new TripPointView({
       tripPoint: this.#tripPoint,
       idToDestinationMap: this.#idToDestinationMap,
+      typeToOffersMap: this.#typeToOffersMap,
       onRollupClick: () => {
         this.#replacePointToForm();
         document.addEventListener('keydown', this.#escKeyDownHandler);
