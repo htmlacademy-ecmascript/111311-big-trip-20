@@ -2,14 +2,16 @@ import TripSortView from '../view/trip-sort-view';
 import TripPointListView from '../view/trip-point-list-view';
 import {remove, render} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
-import TripPointsPresenter from './trip-points-presenter';
+import TripPointPresenter from './trip-point-presenter';
 import {SortType, UpdateType, UserAction} from '../constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
+import {filter} from '../utils/filter-utils';
 
 
 export default class MainPresenter {
   #container;
   #tripPointsModel;
+  #filterModel;
 
   #tripSortComponent;
   #tripPointListComponent = new TripPointListView();
@@ -21,10 +23,13 @@ export default class MainPresenter {
   #idToDestinationMap = new Map();
   #typeToOffersMap = new Map();
 
-  constructor({container, tripPointsModel, destinationsModel, offersModel}) {
+  constructor({container, tripPointsModel, destinationsModel, offersModel, filterModel}) {
     this.#container = container;
     this.#tripPointsModel = tripPointsModel;
-    this.#tripPointsModel.addObserver(this.#handleTripPointsModelEvent);
+    this.#filterModel = filterModel;
+
+    this.#tripPointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
 
     if (destinationsModel) {
       for (const destination of destinationsModel.destinations) {
@@ -44,13 +49,17 @@ export default class MainPresenter {
   }
 
   get tripPoints() {
+    const filterType = this.#filterModel.filter;
+    const tripPoints = this.#tripPointsModel.tripPoints;
+    const filteredTripPoints = filter[filterType](tripPoints);
+
     switch (this.#currentSortType) {
       case SortType.BY_DAY:
-        return [...this.#tripPointsModel.tripPoints].sort(sortByDayAsc);
+        return filteredTripPoints.sort(sortByDayAsc);
       case SortType.BY_PRICE:
-        return [...this.#tripPointsModel.tripPoints].sort(sortByPriceDesc);
+        return filteredTripPoints.sort(sortByPriceDesc);
       case SortType.BY_DURATION:
-        return [...this.#tripPointsModel.tripPoints].sort(sortByDurationDesc);
+        return filteredTripPoints.sort(sortByDurationDesc);
     }
 
     return this.#tripPointsModel.tripPoints;
@@ -81,7 +90,7 @@ export default class MainPresenter {
     }
   };
 
-  #handleTripPointsModelEvent = (updateType, data) => {
+  #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
         this.#idToTripPointsPresentersMap.get(data.id).init(data, this.#idToDestinationMap, this.#typeToOffersMap);
@@ -118,7 +127,7 @@ export default class MainPresenter {
 
   #renderTripPoints() {
     for (const tripPoint of this.tripPoints) {
-      const tripPointsPresenter = new TripPointsPresenter({
+      const tripPointsPresenter = new TripPointPresenter({
         tripPointsContainer: this.#tripPointListComponent.element,
         onDataChange: this.#handleViewAction,
         onModeChange: this.#handleModeChange

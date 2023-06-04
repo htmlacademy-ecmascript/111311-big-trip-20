@@ -57,4 +57,18 @@ function capitalize(str) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-export {toDay, toTime, duration, capitalize, toFullDateTime, areDatesEqual};
+function isInThePast(date) {
+  return date && dayjs().isAfter(date, 'D');
+}
+
+function isCurrentDate(dateFrom, dateTo) {
+  return dateFrom && dateTo
+    && !isInThePast(dateTo)
+    && !isInFuture(dateFrom);
+}
+
+function isInFuture(date) {
+  return date && dayjs().isBefore(date, 'D');
+}
+
+export {toDay, toTime, duration, capitalize, toFullDateTime, areDatesEqual, isInThePast, isCurrentDate, isInFuture};

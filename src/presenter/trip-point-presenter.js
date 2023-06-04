@@ -9,7 +9,7 @@ const Mode = {
   EDITING: 'EDITING'
 };
 
-export default class TripPointsPresenter {
+export default class TripPointPresenter {
   #tripPointsContainer;
   #handleDataChange;
   #handleModeChange;
