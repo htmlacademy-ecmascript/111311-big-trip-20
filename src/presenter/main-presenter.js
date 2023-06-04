@@ -3,7 +3,7 @@ import TripPointListView from '../view/trip-point-list-view';
 import {remove, render} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointPresenter from './trip-point-presenter';
-import {SortType, UpdateType, UserAction} from '../constants';
+import {FilterType, SortType, UpdateType, UserAction} from '../constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 import {filter} from '../utils/filter-utils';
 
@@ -15,10 +15,11 @@ export default class MainPresenter {
 
   #tripSortComponent;
   #tripPointListComponent = new TripPointListView();
-  #emptyTripPointsListComponent = new EmptyTripPointsView();
+  #emptyTripPointsListComponent;
 
   #idToTripPointsPresentersMap = new Map();
   #currentSortType = SortType.BY_DAY;
+  #filterType = FilterType.EVERYTHING;
 
   #idToDestinationMap = new Map();
   #typeToOffersMap = new Map();
@@ -49,9 +50,9 @@ export default class MainPresenter {
   }
 
   get tripPoints() {
-    const filterType = this.#filterModel.filter;
+    this.#filterType = this.#filterModel.filter;
     const tripPoints = this.#tripPointsModel.tripPoints;
-    const filteredTripPoints = filter[filterType](tripPoints);
+    const filteredTripPoints = filter[this.#filterType](tripPoints);
 
     switch (this.#currentSortType) {
       case SortType.BY_DAY:
@@ -66,7 +67,11 @@ export default class MainPresenter {
   }
 
   #renderMain = () => {
-    if (this.#tripPointsModel.tripPoints.length === 0) {
+    if (this.tripPoints.length === 0) {
+      this.#emptyTripPointsListComponent = new EmptyTripPointsView({
+        filterType: this.#filterType
+      });
+
       render(this.#emptyTripPointsListComponent, this.#container);
       return;
     }
@@ -95,8 +100,12 @@ export default class MainPresenter {
       case UpdateType.PATCH:
         this.#idToTripPointsPresentersMap.get(data.id).init(data, this.#idToDestinationMap, this.#typeToOffersMap);
         break;
-      case UpdateType.MAJOR:
+      case UpdateType.MINOR:
         this.#clearMain();
+        this.#renderMain();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearMain({resetSortType: true});
         this.#renderMain();
         break;
     }
@@ -138,11 +147,18 @@ export default class MainPresenter {
     }
   }
 
-  #clearMain() {
+  #clearMain({resetSortType = false} = {}) {
     this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.destroy());
     this.#idToTripPointsPresentersMap.clear();
 
     remove(this.#tripSortComponent);
-    remove(this.#emptyTripPointsListComponent);
+
+    if (this.#emptyTripPointsListComponent) {
+      remove(this.#emptyTripPointsListComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.BY_DAY;
+    }
   }
 }

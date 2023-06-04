@@ -96,14 +96,14 @@ export default class TripPointPresenter {
   }
 
   #handleFormSubmit = (updatedTripPoint) => {
-    const isMajorUpdate =
+    const isMinorUpdate =
       !areDatesEqual(this.#tripPoint.dateFrom, updatedTripPoint.dateFrom)
       || !areDatesEqual(this.#tripPoint.dateTo, updatedTripPoint.dateTo)
       || this.#tripPoint.basePrice !== updatedTripPoint.basePrice;
 
     this.#handleDataChange(
       UserAction.UPDATE_TRIP_POINT,
-      isMajorUpdate ? UpdateType.MAJOR : UpdateType.PATCH,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       updatedTripPoint
     );
 
@@ -113,7 +113,7 @@ export default class TripPointPresenter {
   #handleDeleteClick = (tripPoint) => {
     this.#handleDataChange(
       UserAction.DELETE_TRIP_POINT,
-      UpdateType.MAJOR,
+      UpdateType.MINOR,
       tripPoint
     );
   };
