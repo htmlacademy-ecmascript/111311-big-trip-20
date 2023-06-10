@@ -26,6 +26,30 @@ export default class TripPointsModel extends Observable {
     this._notify(updateType, updatedTripPoint);
   }
 
+  addTripPoint(updateType, newTripPoint) {
+    this.#tripPoints = [
+      newTripPoint,
+      ...this.#tripPoints,
+    ];
+
+    this._notify(updateType, newTripPoint);
+  }
+
+  deleteTripPoint(updateType, tripPointToDelete) {
+    const index = this.#tripPoints.findIndex((tripPoint) => tripPoint.id === tripPointToDelete.id);
+
+    if (index === -1) {
+      throw new Error('Can\'t delete non-existent trip-point');
+    }
+
+    this.#tripPoints = [
+      ...this.#tripPoints.slice(0, index),
+      ...this.#tripPoints.slice(index + 1),
+    ];
+
+    this._notify(updateType);
+  }
+
   #convert(tripPointResponse) {
     const result = {
       ...tripPointResponse,

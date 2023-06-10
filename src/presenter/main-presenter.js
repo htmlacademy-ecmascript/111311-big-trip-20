@@ -6,6 +6,7 @@ import TripPointPresenter from './trip-point-presenter';
 import {FilterType, SortType, UpdateType, UserAction} from '../constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 import {filter} from '../utils/filter-utils';
+import NewTripPointPresenter from './new-trip-point-presenter';
 
 
 export default class MainPresenter {
@@ -18,19 +19,29 @@ export default class MainPresenter {
   #emptyTripPointsListComponent;
 
   #idToTripPointsPresentersMap = new Map();
+  #newTripPointPresenter;
+
   #currentSortType = SortType.BY_DAY;
   #filterType = FilterType.EVERYTHING;
 
   #idToDestinationMap = new Map();
   #typeToOffersMap = new Map();
 
-  constructor({container, tripPointsModel, destinationsModel, offersModel, filterModel}) {
+  constructor({container, tripPointsModel, destinationsModel, offersModel, filterModel, onNewTripPointDestroy}) {
     this.#container = container;
     this.#tripPointsModel = tripPointsModel;
     this.#filterModel = filterModel;
 
     this.#tripPointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
+
+    this.#newTripPointPresenter = new NewTripPointPresenter({
+      idToDestinationMap: this.#idToDestinationMap,
+      typeToOffersMap: this.#typeToOffersMap,
+      tripPointsContainer: this.#tripPointListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onDestroy: onNewTripPointDestroy
+    });
 
     if (destinationsModel) {
       for (const destination of destinationsModel.destinations) {
@@ -81,16 +92,22 @@ export default class MainPresenter {
     this.#renderTripPoints();
   };
 
+  createTripPoint() {
+    this.#currentSortType = SortType.BY_DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newTripPointPresenter.init();
+  }
+
   #handleViewAction = (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_TRIP_POINT:
         this.#tripPointsModel.updateTripPoint(updateType, update);
         break;
       case UserAction.ADD_TRIP_POINT:
-        // ToDo
+        this.#tripPointsModel.addTripPoint(updateType, update);
         break;
       case UserAction.DELETE_TRIP_POINT:
-        // ToDo
+        this.#tripPointsModel.deleteTripPoint(updateType, update);
         break;
     }
   };
@@ -131,6 +148,7 @@ export default class MainPresenter {
   }
 
   #handleModeChange = () => {
+    this.#newTripPointPresenter.destroy();
     this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.resetView());
   };
 
@@ -148,6 +166,7 @@ export default class MainPresenter {
   }
 
   #clearMain({resetSortType = false} = {}) {
+    this.#newTripPointPresenter.destroy();
     this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.destroy());
     this.#idToTripPointsPresentersMap.clear();
 

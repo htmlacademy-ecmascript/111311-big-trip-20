@@ -6,6 +6,7 @@ import DestinationsModel from './model/destinations-model';
 import OffersModel from './model/offers-model';
 import TripFiltersPresenter from './presenter/trip-filters-presenter';
 import FilterModel from './model/filter-model';
+import NewTripPointButtonView from './view/new-trip-point-button-view';
 
 const pageHeaderElement = document.querySelector('.page-header');
 const tripMainElement = pageHeaderElement.querySelector('.trip-main');
@@ -13,12 +14,25 @@ const tripControlsFiltersElement = pageHeaderElement.querySelector('.trip-contro
 
 const tripPointsElement = document.querySelector('.trip-events');
 
-render(new TripInfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
-
 const tripPointsModel = new TripPointsModel();
 const destinationsModel = new DestinationsModel();
 const offersModel = new OffersModel();
 const filterModel = new FilterModel();
+
+
+render(new TripInfoView(), tripMainElement, RenderPosition.AFTERBEGIN);
+
+const tripFilterPresenter = new TripFiltersPresenter({
+  tripFilterContainer: tripControlsFiltersElement,
+  filterModel,
+  tripPointsModel
+});
+
+const newTripPointButtonComponent = new NewTripPointButtonView({
+  onClick: handleNewTripPointButtonClick
+});
+
+render(newTripPointButtonComponent, tripMainElement);
 
 const mainPresenter = new MainPresenter({
   container: tripPointsElement,
@@ -26,13 +40,17 @@ const mainPresenter = new MainPresenter({
   destinationsModel,
   offersModel,
   filterModel,
+  onNewTripPointDestroy: handleNewTripPointFormClose
 });
 
-const tripFilterPresenter = new TripFiltersPresenter({
-  tripFilterContainer: tripControlsFiltersElement,
-  filterModel,
-  tripPointsModel
-});
+function handleNewTripPointFormClose() {
+  newTripPointButtonComponent.element.disabled = false;
+}
+
+function handleNewTripPointButtonClick() {
+  mainPresenter.createTripPoint();
+  newTripPointButtonComponent.element.disabled = true;
+}
 
 tripFilterPresenter.init();
 mainPresenter.init();
