@@ -6,4 +6,23 @@ const SortType = {
   BY_DURATION: 'by-duration',
 };
 
-export {TRIP_POINT_TYPES, SortType};
+const UserAction = {
+  UPDATE_TRIP_POINT: 'UPDATE_TRIP_POINT',
+  ADD_TRIP_POINT: 'ADD_TRIP_POINT',
+  DELETE_TRIP_POINT: 'DELETE_TRIP_POINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+export {TRIP_POINT_TYPES, SortType, UpdateType, UserAction, FilterType};

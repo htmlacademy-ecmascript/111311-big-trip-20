@@ -1,13 +1,15 @@
 import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
+import {UpdateType, UserAction} from '../constants';
+import {areDatesEqual} from '../utils/utils';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
   EDITING: 'EDITING'
 };
 
-export default class TripPointsPresenter {
+export default class TripPointPresenter {
   #tripPointsContainer;
   #handleDataChange;
   #handleModeChange;
@@ -17,6 +19,7 @@ export default class TripPointsPresenter {
 
   #tripPoint;
   #idToDestinationMap;
+  #typeToOffersMap;
   #mode = Mode.DEFAULT;
 
   constructor({tripPointsContainer, onDataChange, onModeChange}) {
@@ -32,6 +35,7 @@ export default class TripPointsPresenter {
     const prevTripPointEditComponent = this.#tripPointEditComponent;
 
     this.#idToDestinationMap = idToDestinationMap;
+    this.#typeToOffersMap = typeToOffersMap;
 
     this.#tripPointComponent = this.#createTripPointView();
 
@@ -39,8 +43,9 @@ export default class TripPointsPresenter {
       tripPoint,
       idToDestinationMap,
       typeToOffersMap,
-      onRollupClick: this.#handleRollupClick(),
-      onFormSubmit: this.#handleFormSubmit()
+      onRollupClick: this.#handleRollupClick,
+      onFormSubmit: this.#handleFormSubmit,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (!prevTripPointComponent || !prevTripPointEditComponent) {
@@ -75,30 +80,50 @@ export default class TripPointsPresenter {
     return new TripPointView({
       tripPoint: this.#tripPoint,
       idToDestinationMap: this.#idToDestinationMap,
+      typeToOffersMap: this.#typeToOffersMap,
       onRollupClick: () => {
         this.#replacePointToForm();
         document.addEventListener('keydown', this.#escKeyDownHandler);
       },
       onFavoriteClick: () => {
-        this.#handleDataChange({...this.#tripPoint, isFavorite: !this.#tripPoint.isFavorite});
+        this.#handleDataChange(
+          UserAction.UPDATE_TRIP_POINT,
+          UpdateType.MINOR,
+          {...this.#tripPoint, isFavorite: !this.#tripPoint.isFavorite}
+        );
       }
     });
   }
 
-  #handleFormSubmit() {
-    return () => {
-      this.#replaceFormToPoint();
-    };
-  }
+  #handleFormSubmit = (updatedTripPoint) => {
+    const isMinorUpdate =
+      !areDatesEqual(this.#tripPoint.dateFrom, updatedTripPoint.dateFrom)
+      || !areDatesEqual(this.#tripPoint.dateTo, updatedTripPoint.dateTo)
+      || this.#tripPoint.basePrice !== updatedTripPoint.basePrice;
 
-  #handleRollupClick() {
-    return () => {
-      this.#replaceFormToPoint();
-    };
-  }
+    this.#handleDataChange(
+      UserAction.UPDATE_TRIP_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      updatedTripPoint
+    );
+
+    this.#replaceFormToPoint();
+  };
+
+  #handleDeleteClick = (tripPoint) => {
+    this.#handleDataChange(
+      UserAction.DELETE_TRIP_POINT,
+      UpdateType.MINOR,
+      tripPoint
+    );
+  };
+
+  #handleRollupClick = () => {
+    this.#replaceFormToPoint();
+  };
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.#replaceFormToPoint();
     }

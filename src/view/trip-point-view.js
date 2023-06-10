@@ -1,13 +1,33 @@
 import {capitalize, duration, toDay, toTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createTripPointTemplate(tripPoint, idToDestinationMap) {
+function createOffersTemplate(offers) {
+  let result = '';
+  if (!offers) {
+    return result;
+  }
+
+  for (const offer of offers) {
+    result += (
+      `<li class="event__offer">
+        <span class="event__offer-title">${offer.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offer.price}</span>
+      </li>`
+    );
+  }
+
+  return result;
+}
+
+function createTripPointTemplate(tripPoint, idToDestinationMap, typeToOffersMap) {
   const day = toDay(tripPoint.dateFrom);
   const startTime = toTime(tripPoint.dateFrom);
   const endTime = toTime(tripPoint.dateTo);
   const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
   const eventTitle = `${capitalize(tripPoint.type)} ${idToDestinationMap.get(tripPoint.destination).name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
+  const offers = typeToOffersMap.get(tripPoint.type);
 
   return (
     `<li class="trip-events__item">
@@ -28,6 +48,10 @@ function createTripPointTemplate(tripPoint, idToDestinationMap) {
         <p class="event__price">
           &euro;&nbsp;<span class="event__price-value">${tripPoint.basePrice}</span>
         </p>
+        <h4 class="visually-hidden">Offers:</h4>
+        <ul class="event__selected-offers">
+          ${createOffersTemplate(offers)}
+        </ul>
         <button class="event__favorite-btn  ${isFavoriteClassName}" type="button">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -45,11 +69,13 @@ function createTripPointTemplate(tripPoint, idToDestinationMap) {
 export default class TripPointView extends AbstractView {
   #tripPoint;
   #idToDestinationMap;
+  #typeToOffersMap;
 
-  constructor({tripPoint, idToDestinationMap, onRollupClick, onFavoriteClick}) {
+  constructor({tripPoint, idToDestinationMap, typeToOffersMap, onRollupClick, onFavoriteClick}) {
     super();
     this.#tripPoint = tripPoint;
     this.#idToDestinationMap = idToDestinationMap;
+    this.#typeToOffersMap = typeToOffersMap;
 
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', (evt) => {
@@ -65,6 +91,6 @@ export default class TripPointView extends AbstractView {
   }
 
   get template() {
-    return createTripPointTemplate(this.#tripPoint, this.#idToDestinationMap);
+    return createTripPointTemplate(this.#tripPoint, this.#idToDestinationMap, this.#typeToOffersMap);
   }
 }
