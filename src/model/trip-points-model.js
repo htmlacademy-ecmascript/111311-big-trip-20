@@ -1,17 +1,28 @@
-import {tripPointsStub} from '../stub/trip-points-stub';
 import Observable from '../framework/observable';
+import {UpdateType} from '../constants';
 
 export default class TripPointsModel extends Observable {
-  #tripPoints = tripPointsStub.map((stub) => this.#convert(stub));
+  #tripPointsApiService;
+  #tripPoints = [];
+
+  constructor({tripPointsApiService}) {
+    super();
+    this.#tripPointsApiService = tripPointsApiService;
+  }
+
+  async init() {
+    try {
+      const tripPoints = await this.#tripPointsApiService.tripPoints;
+      this.#tripPoints = tripPoints.map(this.#convertFromServerResponse);
+    } catch (err) {
+      this.#tripPoints = [];
+    }
+
+    this._notify(UpdateType.INIT);
+  }
 
   get tripPoints() {
     return this.#tripPoints;
-  }
-
-  set tripPoints(tripPoints) {
-    this.#tripPoints = tripPoints;
-
-    this._notify(null, tripPoints);
   }
 
   updateTripPoint(updateType, updatedTripPoint) {
@@ -50,7 +61,7 @@ export default class TripPointsModel extends Observable {
     this._notify(updateType);
   }
 
-  #convert(tripPointResponse) {
+  #convertFromServerResponse(tripPointResponse) {
     const result = {
       ...tripPointResponse,
       basePrice: tripPointResponse.base_price,
