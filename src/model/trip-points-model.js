@@ -13,7 +13,7 @@ export default class TripPointsModel extends Observable {
   async init() {
     try {
       const tripPoints = await this.#tripPointsApiService.tripPoints;
-      this.#tripPoints = tripPoints.map(this.#convertFromServerResponse);
+      this.#tripPoints = tripPoints.map(this.#adaptToClient);
     } catch (err) {
       this.#tripPoints = [];
     }
@@ -25,16 +25,21 @@ export default class TripPointsModel extends Observable {
     return this.#tripPoints;
   }
 
-  updateTripPoint(updateType, updatedTripPoint) {
+  async updateTripPoint(updateType, updatedTripPoint) {
     const index = this.#tripPoints.findIndex((tripPoint) => tripPoint.id === updatedTripPoint.id);
 
     if (index === -1) {
       throw new Error('Can\'t update non-existing trip point');
     }
 
-    this.#tripPoints[index] = updatedTripPoint;
-
-    this._notify(updateType, updatedTripPoint);
+    try {
+      const response = await this.#tripPointsApiService.updateTripPoint(updatedTripPoint);
+      this.#tripPoints[index] = this.#adaptToClient(response);
+      this._notify(updateType, updatedTripPoint);
+    } catch (e) {
+      console.log(e);
+      throw new Error('Can\'t update trip point');
+    }
   }
 
   addTripPoint(updateType, newTripPoint) {
@@ -61,19 +66,23 @@ export default class TripPointsModel extends Observable {
     this._notify(updateType);
   }
 
-  #convertFromServerResponse(tripPointResponse) {
+  #adaptToClient(tripPointResponse) {
     const result = {
       ...tripPointResponse,
-      basePrice: tripPointResponse.base_price,
-      dateFrom: tripPointResponse.date_from,
-      dateTo: tripPointResponse.date_to,
-      isFavorite: tripPointResponse.is_favorite
+      basePrice: tripPointResponse['base_price'],
+      dateFrom: tripPointResponse['date_from'] !== null
+        ? new Date(tripPointResponse['date_from'])
+        : null,
+      dateTo: tripPointResponse['date_to'] !== null
+        ? new Date(tripPointResponse['date_to'])
+        : null,
+      isFavorite: tripPointResponse['is_favorite']
     };
 
-    delete tripPointResponse.base_price;
-    delete tripPointResponse.date_from;
-    delete tripPointResponse.date_to;
-    delete tripPointResponse.is_favorite;
+    delete result['base_price'];
+    delete result['date_from'];
+    delete result['date_to'];
+    delete result['is_favorite'];
 
     return result;
   }

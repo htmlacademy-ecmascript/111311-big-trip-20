@@ -17,26 +17,30 @@ export default class TripPointsApiService extends ApiService {
     const response = await this._load({
       url: `points/${tripPoint.id}`,
       method: Method.PUT,
-      body: JSON.stringify(this.#convertToServerRequest(tripPoint)),
+      body: JSON.stringify(this.#adaptToServer(tripPoint)),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
 
     return await ApiService.parseResponse(response);
   }
 
-  #convertToServerRequest(tripPointRequest) {
+  #adaptToServer(tripPointRequest) {
     const result = {
       ...tripPointRequest,
-      'base_price': tripPointRequest.basePrice,
-      'date_from': tripPointRequest.dateFrom,
-      'date_to': tripPointRequest.dateTo,
+      'base_price': parseInt(tripPointRequest.basePrice, 10),
+      'date_from': tripPointRequest.dateFrom instanceof Date
+        ? tripPointRequest.dateFrom.toISOString()
+        : null,
+      'date_to': tripPointRequest.dateTo instanceof Date
+        ? tripPointRequest.dateTo.toISOString()
+        : null,
       'is_favorite': tripPointRequest.isFavorite
     };
 
-    delete tripPointRequest.basePrice;
-    delete tripPointRequest.dateFrom;
-    delete tripPointRequest.dateTo;
-    delete tripPointRequest.isFavorite;
+    delete result.basePrice;
+    delete result.dateFrom;
+    delete result.dateTo;
+    delete result.isFavorite;
 
     return result;
   }
