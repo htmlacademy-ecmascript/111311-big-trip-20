@@ -1,7 +1,6 @@
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import {UpdateType, UserAction} from '../constants';
-import {nanoid} from 'nanoid';
 
 export default class NewTripPointPresenter {
   #idToDestinationMap;
@@ -60,7 +59,7 @@ export default class NewTripPointPresenter {
     this.#handleDataChange(
       UserAction.ADD_TRIP_POINT,
       UpdateType.MINOR,
-      {id: nanoid(), ...tripPoint}
+      tripPoint,
     );
 
     this.destroy();
