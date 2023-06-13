@@ -7,6 +7,12 @@ import OffersModel from './model/offers-model';
 import TripFiltersPresenter from './presenter/trip-filters-presenter';
 import FilterModel from './model/filter-model';
 import NewTripPointButtonView from './view/new-trip-point-button-view';
+import TripPointsApiService from './api/trip-points-api-service';
+import DestinationsApiService from './api/destinations-api-service';
+import OffersApiService from './api/offers-api-service';
+
+const END_POINT = 'https://20.ecmascript.pages.academy/big-trip';
+const AUTHORIZATION = 'Basic RGVuaXNCb2dkYW5vdg==';
 
 const pageHeaderElement = document.querySelector('.page-header');
 const tripMainElement = pageHeaderElement.querySelector('.trip-main');
@@ -14,9 +20,18 @@ const tripControlsFiltersElement = pageHeaderElement.querySelector('.trip-contro
 
 const tripPointsElement = document.querySelector('.trip-events');
 
-const tripPointsModel = new TripPointsModel();
-const destinationsModel = new DestinationsModel();
-const offersModel = new OffersModel();
+const tripPointsModel = new TripPointsModel({
+  tripPointsApiService: new TripPointsApiService(END_POINT, AUTHORIZATION)
+});
+
+const destinationsModel = new DestinationsModel({
+  destinationsApiService: new DestinationsApiService(END_POINT, AUTHORIZATION)
+});
+
+const offersModel = new OffersModel({
+  offersApiService: new OffersApiService(END_POINT, AUTHORIZATION)
+});
+
 const filterModel = new FilterModel();
 
 
@@ -32,8 +47,6 @@ const newTripPointButtonComponent = new NewTripPointButtonView({
   onClick: handleNewTripPointButtonClick
 });
 
-render(newTripPointButtonComponent, tripMainElement);
-
 const mainPresenter = new MainPresenter({
   container: tripPointsElement,
   tripPointsModel,
@@ -43,14 +56,21 @@ const mainPresenter = new MainPresenter({
   onNewTripPointDestroy: handleNewTripPointFormClose
 });
 
-function handleNewTripPointFormClose() {
-  newTripPointButtonComponent.element.disabled = false;
-}
-
 function handleNewTripPointButtonClick() {
   mainPresenter.createTripPoint();
   newTripPointButtonComponent.element.disabled = true;
 }
 
+function handleNewTripPointFormClose() {
+  newTripPointButtonComponent.element.disabled = false;
+}
+
 tripFilterPresenter.init();
 mainPresenter.init();
+
+destinationsModel.init()
+  .then(() => offersModel.init())
+  .then(() => tripPointsModel.init())
+  .finally(() => {
+    render(newTripPointButtonComponent, tripMainElement);
+  });

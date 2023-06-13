@@ -1,21 +1,25 @@
 import TripSortView from '../view/trip-sort-view';
 import TripPointListView from '../view/trip-point-list-view';
-import {remove, render} from '../framework/render';
+import {remove, render, RenderPosition} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointPresenter from './trip-point-presenter';
 import {FilterType, SortType, UpdateType, UserAction} from '../constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 import {filter} from '../utils/filter-utils';
 import NewTripPointPresenter from './new-trip-point-presenter';
+import LoadingView from '../view/loading-view';
 
 
 export default class MainPresenter {
   #container;
   #tripPointsModel;
   #filterModel;
+  #destinationsModel;
+  #offersModel;
 
   #tripSortComponent;
   #tripPointListComponent = new TripPointListView();
+  #loadingComponent = new LoadingView();
   #emptyTripPointsListComponent;
 
   #idToTripPointsPresentersMap = new Map();
@@ -23,6 +27,7 @@ export default class MainPresenter {
 
   #currentSortType = SortType.BY_DAY;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
 
   #idToDestinationMap = new Map();
   #typeToOffersMap = new Map();
@@ -31,6 +36,8 @@ export default class MainPresenter {
     this.#container = container;
     this.#tripPointsModel = tripPointsModel;
     this.#filterModel = filterModel;
+    this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
 
     this.#tripPointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -42,18 +49,6 @@ export default class MainPresenter {
       onDataChange: this.#handleViewAction,
       onDestroy: onNewTripPointDestroy
     });
-
-    if (destinationsModel) {
-      for (const destination of destinationsModel.destinations) {
-        this.#idToDestinationMap.set(destination.id, destination);
-      }
-    }
-
-    if (offersModel) {
-      for (const offerByType of offersModel.offers) {
-        this.#typeToOffersMap.set(offerByType.type, offerByType.offers);
-      }
-    }
   }
 
   init() {
@@ -78,6 +73,11 @@ export default class MainPresenter {
   }
 
   #renderMain = () => {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.tripPoints.length === 0) {
       this.#emptyTripPointsListComponent = new EmptyTripPointsView({
         filterType: this.#filterType
@@ -125,6 +125,17 @@ export default class MainPresenter {
         this.#clearMain({resetSortType: true});
         this.#renderMain();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        for (const destination of this.#destinationsModel.destinations) {
+          this.#idToDestinationMap.set(destination.id, destination);
+        }
+        for (const offerByType of this.#offersModel.offers) {
+          this.#typeToOffersMap.set(offerByType.type, offerByType.offers);
+        }
+        this.#renderMain();
+        break;
     }
   };
 
@@ -165,12 +176,17 @@ export default class MainPresenter {
     }
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#tripPointListComponent.element, RenderPosition.AFTERBEGIN);
+  }
+
   #clearMain({resetSortType = false} = {}) {
     this.#newTripPointPresenter.destroy();
     this.#idToTripPointsPresentersMap.forEach((presenter) => presenter.destroy());
     this.#idToTripPointsPresentersMap.clear();
 
     remove(this.#tripSortComponent);
+    remove(this.#loadingComponent);
 
     if (this.#emptyTripPointsListComponent) {
       remove(this.#emptyTripPointsListComponent);

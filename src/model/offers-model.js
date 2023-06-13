@@ -1,16 +1,23 @@
-import {offersStub} from '../stub/offers-stub';
 import Observable from '../framework/observable';
 
 export default class OffersModel extends Observable {
-  #offers = offersStub;
+  #offersApiService;
+  #offers = [];
+
+  constructor({offersApiService}) {
+    super();
+    this.#offersApiService = offersApiService;
+  }
+
+  async init() {
+    try {
+      this.#offers = await this.#offersApiService.offers;
+    } catch (err) {
+      this.#offers = [];
+    }
+  }
 
   get offers() {
     return this.#offers;
-  }
-
-  set offers(offers) {
-    this.#offers = offers;
-
-    this._notify(null, offers);
   }
 }
