@@ -268,6 +268,12 @@ export default class TripPointEditView extends AbstractStatefulView {
     }
   }
 
+  reset(tripPoint) {
+    this.updateElement(
+      TripPointEditView.parseTripPointToState(tripPoint),
+    );
+  }
+
   #setDateFromDatepicker() {
     this.#dateFromDatepicker = flatpickr(
       this.element.querySelector('input[name=event-start-time]'),
