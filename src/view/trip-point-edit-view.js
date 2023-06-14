@@ -117,6 +117,13 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
   const isSaving = tripPoint.isSaving;
   const isDeleting = tripPoint.isDeleting;
 
+  const isAddingNewTripPoint = (!tripPoint.dateFrom && !tripPoint.dateTo);
+
+  let resetButtonLabel = isDeleting ? 'Deleting...' : 'Delete';
+  if (isAddingNewTripPoint) {
+    resetButtonLabel = 'Cancel';
+  }
+
   const dateFrom = toFullDateTime(tripPoint.dateFrom);
   const dateTo = toFullDateTime(tripPoint.dateTo);
   const destination = idToDestinationMap.get(tripPoint.destination);
@@ -171,7 +178,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetButtonLabel}</button>
           <button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
             <span class="visually-hidden">Open event</span>
           </button>
