@@ -1,13 +1,17 @@
 import {capitalize, duration, toDay, toTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createOffersTemplate(offers) {
+function createOffersTemplate(offers, tripPoint) {
   let result = '';
   if (!offers) {
     return result;
   }
 
   for (const offer of offers) {
+    if (!tripPoint.offers.includes(offer.id)) {
+      continue;
+    }
+
     result += (
       `<li class="event__offer">
         <span class="event__offer-title">${offer.title}</span>
@@ -50,7 +54,7 @@ function createTripPointTemplate(tripPoint, idToDestinationMap, typeToOffersMap)
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-          ${createOffersTemplate(offers)}
+          ${createOffersTemplate(offers, tripPoint)}
         </ul>
         <button class="event__favorite-btn  ${isFavoriteClassName}" type="button">
           <span class="visually-hidden">Add to favorite</span>

@@ -81,10 +81,10 @@ function createDestinationTemplate(destination) {
   );
 }
 
-function createOfferTemplate(offer, isDisabled) {
+function createOfferTemplate(offer, isDisabled, isChecked) {
   return (
     `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" checked ${isDisabled ? 'disabled' : ''}>
+      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
       <label class="event__offer-label" for="${offer.id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
@@ -94,7 +94,7 @@ function createOfferTemplate(offer, isDisabled) {
   );
 }
 
-function createOffersTemplate(offers, isDisabled) {
+function createOffersTemplate(offers, isDisabled, tripPoint) {
   if (!offers || offers.length === 0) {
     return '';
   }
@@ -105,7 +105,8 @@ function createOffersTemplate(offers, isDisabled) {
         <div class="event__available-offers">`;
 
   for (const offer of offers) {
-    result += createOfferTemplate(offer, isDisabled);
+    const isChecked = tripPoint.offers.includes(offer.id);
+    result += createOfferTemplate(offer, isDisabled, isChecked);
   }
 
   result += '</div></section>';
@@ -128,7 +129,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
   const dateTo = toFullDateTime(tripPoint.dateTo);
   const destination = idToDestinationMap.get(tripPoint.destination);
   const destinationTemplate = createDestinationTemplate(destination);
-  const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type), isDisabled);
+  const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type), isDisabled, tripPoint);
   const eventTypesTemplate = createEventTypesTemplate();
   const destinationsTemplate = createDestinationsTemplate(idToDestinationMap);
 
