@@ -14,7 +14,7 @@ export default class TripPointsModel extends Observable {
     try {
       const tripPoints = await this.#tripPointsApiService.tripPoints;
       this.#tripPoints = tripPoints.map(this.#adaptToClient);
-    } catch (err) {
+    } catch (e) {
       this.#tripPoints = [];
     }
 
