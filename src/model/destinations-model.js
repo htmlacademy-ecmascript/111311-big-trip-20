@@ -12,7 +12,7 @@ export default class DestinationsModel extends Observable {
   async init() {
     try {
       this.#destinations = await this.#destinationsApiService.destinations;
-    } catch (err) {
+    } catch (e) {
       this.#destinations = [];
     }
   }

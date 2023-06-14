@@ -98,16 +98,34 @@ export default class MainPresenter {
     this.#newTripPointPresenter.init();
   }
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_TRIP_POINT:
-        this.#tripPointsModel.updateTripPoint(updateType, update);
+        this.#idToTripPointsPresentersMap.get(update.id).setSaving();
+        try {
+          await this.#tripPointsModel.updateTripPoint(updateType, update);
+        } catch (e) {
+          this.#idToTripPointsPresentersMap.get(update.id).setAborting();
+        }
+
         break;
       case UserAction.ADD_TRIP_POINT:
-        this.#tripPointsModel.addTripPoint(updateType, update);
+        this.#newTripPointPresenter.setSaving();
+        try {
+          await this.#tripPointsModel.addTripPoint(updateType, update);
+        } catch (e) {
+          this.#newTripPointPresenter.setAborting();
+        }
+
         break;
       case UserAction.DELETE_TRIP_POINT:
-        this.#tripPointsModel.deleteTripPoint(updateType, update);
+        this.#idToTripPointsPresentersMap.get(update.id).setDeleting();
+        try {
+          await this.#tripPointsModel.deleteTripPoint(updateType, update);
+        } catch (e) {
+          this.#idToTripPointsPresentersMap.get(update.id).setAborting();
+        }
+
         break;
     }
   };
