@@ -339,7 +339,7 @@ export default class TripPointEditView extends AbstractStatefulView {
     });
 
     this.element.querySelector('.event__available-offers')
-      .addEventListener('change', this.#chooseOffersHandler);
+      ?.addEventListener('change', this.#chooseOffersHandler);
 
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
