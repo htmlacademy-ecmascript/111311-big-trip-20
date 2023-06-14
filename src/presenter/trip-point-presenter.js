@@ -1,7 +1,7 @@
 import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
-import {UpdateType, UserAction} from '../constants';
+import {UpdateType, UserAction} from '../utils/constants';
 import {areDatesEqual} from '../utils/utils';
 
 const Mode = {

@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view';
-import {SortType} from '../constants';
+import {SortType} from '../utils/constants';
 
 function createTripSortTemplate(currentSortType) {
   return (

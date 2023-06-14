@@ -1,5 +1,5 @@
 import {capitalize, toFullDateTime} from '../utils/utils';
-import {TRIP_POINT_TYPES} from '../constants';
+import {TRIP_POINT_TYPES} from '../utils/constants';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 

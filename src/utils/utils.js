@@ -20,10 +20,29 @@ function duration(start, end) {
   const startDate = dayjs(start);
   const endDate = dayjs(end);
   const totalMinutes = endDate.diff(startDate, 'm');
-  const hours = Math.floor(totalMinutes / 60);
+  let hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   let resultTemplate = '';
+
+  if (hours > 23) {
+    const days = Math.floor(hours / 24);
+    hours -= days * 24;
+
+    if (days < 10) {
+      resultTemplate += '0';
+    }
+
+    resultTemplate += days;
+    resultTemplate += 'D';
+
+    if (hours === 0) {
+      resultTemplate += ' 00H';
+    }
+  }
+
   if (hours > 0) {
+    resultTemplate += ' ';
+
     if (hours < 10) {
       resultTemplate += '0';
     }
