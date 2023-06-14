@@ -3,7 +3,7 @@ import TripPointListView from '../view/trip-point-list-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import EmptyTripPointsView from '../view/empty-trip-points-view';
 import TripPointPresenter from './trip-point-presenter';
-import {FilterType, SortType, UpdateType, UserAction} from '../constants';
+import {FilterType, SortType, UpdateType, UserAction} from '../utils/constants';
 import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-utils';
 import {filter} from '../utils/filter-utils';
 import NewTripPointPresenter from './new-trip-point-presenter';
