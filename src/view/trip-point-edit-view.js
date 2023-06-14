@@ -84,7 +84,7 @@ function createDestinationTemplate(destination) {
 function createOfferTemplate(offer, isDisabled, isChecked) {
   return (
     `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-${offer.id}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
       <label class="event__offer-label" for="${offer.id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
@@ -338,9 +338,28 @@ export default class TripPointEditView extends AbstractStatefulView {
       }
     });
 
+    this.element.querySelector('.event__available-offers')
+      .addEventListener('change', this.#chooseOffersHandler);
+
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
   }
+
+  #chooseOffersHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    evt.preventDefault();
+
+    const chosenOffers = Array
+      .from(this.element.querySelectorAll('.event__offer-checkbox:checked'))
+      .map((element) => element.id);
+
+    this._setState({
+      offers: chosenOffers
+    });
+  };
 
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
