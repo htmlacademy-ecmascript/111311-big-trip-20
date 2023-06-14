@@ -118,12 +118,14 @@ export default class TripPointPresenter {
   };
 
   #handleRollupClick = () => {
+    this.#tripPointEditComponent.reset(this.#tripPoint);
     this.#replaceFormToPoint();
   };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this.#tripPointEditComponent.reset(this.#tripPoint);
       this.#replaceFormToPoint();
     }
   };
