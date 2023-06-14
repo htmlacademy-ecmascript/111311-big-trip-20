@@ -1,5 +1,5 @@
 import Observable from '../framework/observable';
-import {UpdateType} from '../constants';
+import {UpdateType} from '../utils/constants';
 
 export default class TripPointsModel extends Observable {
   #tripPointsApiService;
