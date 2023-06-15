@@ -1,4 +1,4 @@
-import {capitalize, duration, toDay, toTime} from '../utils/utils';
+import {calculateDuration, capitalize, convertToDay, convertToTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
 
 function createOffersTemplate(offers, tripPoint) {
@@ -25,10 +25,10 @@ function createOffersTemplate(offers, tripPoint) {
 }
 
 function createTripPointTemplate(tripPoint, idToDestinationMap, typeToOffersMap) {
-  const day = toDay(tripPoint.dateFrom);
-  const startTime = toTime(tripPoint.dateFrom);
-  const endTime = toTime(tripPoint.dateTo);
-  const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
+  const day = convertToDay(tripPoint.dateFrom);
+  const startTime = convertToTime(tripPoint.dateFrom);
+  const endTime = convertToTime(tripPoint.dateTo);
+  const durationTime = calculateDuration(tripPoint.dateFrom, tripPoint.dateTo);
   const eventTitle = `${capitalize(tripPoint.type)} ${idToDestinationMap.get(tripPoint.destination).name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
   const offers = typeToOffersMap.get(tripPoint.type);

@@ -68,8 +68,7 @@ function handleNewTripPointFormClose() {
 tripFilterPresenter.init();
 mainPresenter.init();
 
-destinationsModel.init()
-  .then(() => offersModel.init())
+Promise.all([offersModel.init(), destinationsModel.init()])
   .then(() => tripPointsModel.init())
   .finally(() => {
     render(newTripPointButtonComponent, tripMainElement);
