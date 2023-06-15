@@ -1,4 +1,5 @@
-import {capitalize, toFullDateTime} from '../utils/utils';
+import he from 'he';
+import {capitalize, convertToFullDateTime} from '../utils/utils';
 import {TRIP_POINT_TYPES} from '../utils/constants';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
@@ -125,8 +126,8 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
     resetButtonLabel = 'Cancel';
   }
 
-  const dateFrom = toFullDateTime(tripPoint.dateFrom);
-  const dateTo = toFullDateTime(tripPoint.dateTo);
+  const dateFrom = convertToFullDateTime(tripPoint.dateFrom);
+  const dateTo = convertToFullDateTime(tripPoint.dateTo);
   const destination = idToDestinationMap.get(tripPoint.destination);
   const destinationTemplate = createDestinationTemplate(destination);
   const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type), isDisabled, tripPoint);
@@ -156,7 +157,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
             <label class="event__label  event__type-output" for="event-destination-1">
               ${capitalize(tripPoint.type)}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination ? destination.name : ''}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination ? destination.name : '')}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
             <datalist id="destination-list-1">
               ${destinationsTemplate}
             </datalist>
@@ -331,7 +332,10 @@ export default class TripPointEditView extends AbstractStatefulView {
     const eventTypes = this.element.querySelectorAll('input[name=event-type]');
     for (const eventType of eventTypes) {
       eventType.addEventListener('change', () => {
-        this.updateElement({type: eventType.value});
+        this.updateElement({
+          offers: [],
+          type: eventType.value
+        });
       });
     }
 
