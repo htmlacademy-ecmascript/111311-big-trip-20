@@ -77,7 +77,7 @@ function capitalize(str) {
 }
 
 function isInThePast(date) {
-  return date && dayjs().isAfter(date, 'D');
+  return date && dayjs().isAfter(date);
 }
 
 function isCurrentDate(dateFrom, dateTo) {
