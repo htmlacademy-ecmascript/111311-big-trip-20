@@ -8,6 +8,7 @@ import {sortByDayAsc, sortByDurationDesc, sortByPriceDesc} from '../utils/sort-u
 import {filter} from '../utils/filter-utils';
 import NewTripPointPresenter from './new-trip-point-presenter';
 import LoadingView from '../view/loading-view';
+import ServerErrorView from '../view/server-error-view';
 
 
 export default class MainPresenter {
@@ -28,6 +29,7 @@ export default class MainPresenter {
   #currentSortType = SortType.BY_DAY;
   #filterType = FilterType.EVERYTHING;
   #isLoading = true;
+  #isServerError = false;
 
   #idToDestinationMap = new Map();
   #typeToOffersMap = new Map();
@@ -75,6 +77,12 @@ export default class MainPresenter {
   #renderMain = () => {
     if (this.#isLoading) {
       this.#renderLoading();
+      return;
+    }
+
+    if (this.#isServerError) {
+      this.#emptyTripPointsListComponent = new ServerErrorView();
+      render(this.#emptyTripPointsListComponent, this.#container);
       return;
     }
 
@@ -144,6 +152,7 @@ export default class MainPresenter {
         this.#renderMain();
         break;
       case UpdateType.INIT:
+        this.#isServerError = data.isError;
         this.#isLoading = false;
         remove(this.#loadingComponent);
         for (const destination of this.#destinationsModel.destinations) {
